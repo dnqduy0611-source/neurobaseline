@@ -4,14 +4,25 @@
 
 | | |
 |---|---|
-| Team | [TEAM NAME] |
-| Team lead and contact | [NAME, EMAIL] |
-| Members | [NAMES AND ROLES] |
-| Document version | 1.0, November 2026 |
+| Team | Braincore |
+| Team lead and contact | DO NGOC QUOC DUY, dnqduy.0611@gmail.com |
+| Members | DO NGOC QUOC DUY (individual entry, one member) |
+| Document version | 1.3, 12 November 2026 (see [revision history](#revision-history)) |
 | Repository | https://github.com/dnqduy0611-source/neurobaseline |
 | Hosted prototype | https://dnqduy0611-source.github.io/neurobaseline/ |
 
 > NeuroBaseline is a research prototype for screening and monitoring. It makes no diagnosis and is not a medical device.
+
+## Revision history
+
+| Version | Date | Changes |
+|---|---|---|
+| 1.0 | 11 November 2026 | First complete version: participant app, risk context, clinician view, EEG analysis on public data, simulation study. |
+| 1.1 | 11 November 2026 | Added the analysis of fixed cut-offs and education in NHANES 2011–2014 (section 7.3) and what it means for the simulation's assumptions. |
+| 1.2 | 12 November 2026 | Change of device: detection and a new baseline period (sections 6.3, 10 and 12). Backup and restore, with checks on the file (section 5). Example profile reachable from the first screen. |
+| 1.3 | 12 November 2026 | Interface and accessibility (section 6.10). A report of difficulty seeing or tapping reaches the clinician view. Hosted prototype and repository added. 71 automated tests. |
+
+---
 
 ## Contents
 
@@ -214,6 +225,8 @@ S_diff = σ_w × √(1 + 1/n)
 
 `σ₀` is the prior, `s²` the variance of the person's `k` stable sessions.
 
+**Change of device.** Reaction times include the delay of the screen and of the touch hardware, so a baseline belongs to one device. Each session records the operating system family, the screen size and the input type. When these differ from the sessions of the current baseline, the participant chooses between going back to the usual device, declaring the device unchanged, or starting a new baseline period of four sessions. Sessions from an earlier period are kept and shown, but take no part in the comparison or in the trend test. With a device that adds 60 ms and no new baseline, every later session in a test history was flagged.
+
 ### 6.4 Trend test
 
 A slow decline is easier to see in the whole history than in one session. For a candidate onset time τ, each primary indicator is modelled as
@@ -284,6 +297,22 @@ Headbands are emulated by re-referencing clinical recordings to a forehead (Fpz)
 ### 6.9 Clinician view
 
 Participants are ordered by: red-flag report not yet reviewed; red not yet reviewed; yellow; overdue; red reviewed; green; baseline phase. The detail page shows the indicators against the baseline, the trend statistic and its contributions, trajectories, the session log with reported context, the risk context, twelve prompts for potentially reversible contributors, and a review record. A prompt is marked when the participant's own answers point to it; for example, reported diabetes prompts vitamin B12 and glucose, and reported snoring prompts sleep-disordered breathing. New data after a review mark the review as out of date. The prompt list is consistent with guidance to carry out blood and urine tests to exclude reversible causes of cognitive decline [15].
+
+### 6.10 Interface and accessibility
+
+The interface outside the tasks follows the settings of the person's device. The task screens do not, because their appearance is part of the measurement.
+
+| Aspect | What the app does |
+|---|---|
+| Text size | Interface text is sized relative to the browser's base size, and to Dynamic Type on iOS. At 150 % and 200 % on a 360 × 640 screen there is no horizontal overflow; instruction screens scroll. |
+| Motion | With "reduce motion" set, animations and transitions are off and answers no longer advance on their own. The 90-second timer bar of the symbol task keeps moving, because it is the only cue of the time left. |
+| Dark theme | Applies to every screen except the tasks. Task screens keep a light background and the same stimulus colours and sizes in both themes (17 elements compared, identical). |
+| Contrast and size | Text is at least 4.5:1 against its background and at least 12 px. Measured on 12 participant screens and 2 clinician screens in each theme. |
+| Screen readers | Controls have names, changes of status are announced through a live region, tables in the clinician view have captions and row and column headers, and charts carry a text label. |
+| Colour | Status is always given in words as well as colour. In the Go/No-Go task the two stimuli differ in shape as well as colour (green circle, red square). |
+| Who cannot take the tasks | Before every session the app states that the tasks need a clear view of the screen and accurate tapping. A person who reports difficulty gets no session and no score, and the report is shown in the clinician view. |
+
+Not done: no test with a screen reader on a phone (TalkBack, VoiceOver), none with the operating system's own text-size setting, and none with people who have low vision or tremor. The tasks cannot be taken without sight and hand control; the app says so and offers no alternative task.
 
 ---
 
@@ -501,7 +530,7 @@ No data were collected from people during the challenge. The organisers provided
 13. Risk factors are single self-report questions standing in for validated instruments and records. LIBRA has no agreed cut-offs.
 14. The checklist of reversible contributors reflects general clinical practice and has not been checked against a local guideline.
 15. English and Vietnamese only. The Vietnamese PHQ-2 wording is the team's own translation. No Arabic, no audio instructions.
-16. Not tested across phones, with older adults, or with people who have sensory or motor impairment.
+16. Not tested across phones, with older adults, with a screen reader, or with people who have sensory or motor impairment.
 17. Not a certified medical device. No regulatory assessment has been made.
 
 ---
@@ -541,7 +570,9 @@ Sample sizes for stages 1 and 2 will be set from the reliability and within-pers
 
 ## 15. How to review the prototype
 
-Serve the `app/` folder and open it in a browser:
+The prototype is hosted at https://dnqduy0611-source.github.io/neurobaseline/ . The page links to the example profile, the participant app and the clinician view; nothing needs to be installed and there is no login.
+
+To run it locally instead, serve the `app/` folder and open it in a browser:
 
 ```bash
 cd app
