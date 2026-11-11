@@ -1,0 +1,154 @@
+/* NeuroBaseline – clinician view. Desktop first, readable on a tablet, prints as a summary. */
+:root{--ink:#222b45;--mut:#5a6282;--line:#e5e9f6;--bg:#f5f7ff;--brand:#2449e8;--pri:#2449e8;--green:#23804f;--yellow:#a66312;--red:#ba4039}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:0.9375rem/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+.top{background:var(--brand);color:#fff;padding:12px 20px}
+.brand{font-weight:700;font-size:1.125rem}
+.tag-line{font-size:0.8125rem;opacity:.85}
+.bar{display:flex;gap:8px;align-items:center;padding:10px 20px;background:#fff;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.grow{flex:1}
+.page{max-width:1080px;margin:0 auto;padding:16px 20px 60px}
+h1{font-size:1.5rem;margin:8px 0 4px}
+h2{font-size:1rem;margin:0 0 8px}
+p{margin:6px 0}
+ul{margin:6px 0;padding-left:20px}
+.muted{color:var(--mut)} .small{font-size:0.8125rem} .nowrap{white-space:nowrap}
+.note{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 10px}
+.empty{padding:40px 0;text-align:center;color:var(--mut)}
+.btn{font:inherit;font-weight:600;padding:8px 14px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
+.btn.sm{padding:6px 12px;font-size:0.875rem}
+.btn.primary{background:var(--pri);border-color:var(--pri);color:#fff}
+.btn.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:12px 0}
+.card.urgent{border-color:#111827;border-left:6px solid #111827;background:#fff7ed}
+.card.urgent.past{border-left-color:var(--mut);background:#fff}
+.two{display:grid;grid-template-columns:1.4fr 1fr;gap:12px}
+.two .card{margin:12px 0 0}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%}
+th{font-size:0.75rem;font-weight:600;color:var(--mut);text-align:left;padding:6px 8px;border-bottom:2px solid var(--line);vertical-align:bottom}
+td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+table.list tr.row{cursor:pointer;background:#fff}
+table.list td:nth-child(2){min-width:170px}
+table.list tr.row:hover,table.list tr.row:focus{background:#f0f6ff;outline:none}
+table.data th,table.data td.num{text-align:right}
+table.data th:first-child,table.data td:first-child,table.data th:nth-child(2){text-align:left}
+table.data td:nth-child(2):not(.num){text-align:left}
+.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+td.warn,b.warn{color:var(--yellow);font-weight:700}
+td.bad,b.bad{color:var(--red);font-weight:700}
+table.kv td{border:0;padding:3px 10px 3px 0}
+table.kv td:first-child{color:var(--mut);white-space:nowrap;width:1%}
+.st{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.st i{width:12px;height:12px;border-radius:50%;background:#cbd5e1;display:inline-block;flex:0 0 12px}
+.st.green i{background:var(--green)}.st.yellow i{background:var(--yellow)}.st.red i{background:var(--red)}.st.urgent i{background:#111827}
+.statusline{font-size:1.0625rem}
+.tag{display:inline-block;font-size:0.75rem;font-weight:700;padding:1px 7px;border-radius:99px;background:#f1f5f9;color:#475569;white-space:nowrap}
+.tag.sim{background:#ede9fe;color:#5b21b6}.tag.warn{background:#fef3c7;color:#92400e}.tag.need{background:#fee2e2;color:#991b1b}.tag.ok{background:#dcfce7;color:#166534}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}
+figure{margin:0}
+figcaption{font-weight:600;margin-bottom:2px}
+.chart{width:100%;height:auto;display:block}
+ul.check{list-style:none;padding:0;margin:8px 0 0}
+ul.check li{padding:7px 0;border-bottom:1px solid var(--line)}
+ul.check li:last-child{border-bottom:0}
+ul.check li.prompted{background:#fffbeb;margin:0 -8px;padding:7px 8px;border-radius:6px}
+ul.check label,.chk{display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+ul.check input,.chk input{width:18px;height:18px;margin-top:2px;flex:0 0 18px}
+ul.check .why{margin:2px 0 0 26px;color:#78350f}
+.fld{display:block;margin:10px 0;font-weight:600}
+.fld select,.fld textarea{display:block;width:100%;max-width:520px;margin-top:4px;font:inherit;font-weight:400;border:1px solid #cbd5e1;border-radius:8px;padding:7px 9px;background:#fff}
+/* Clinical workspace: quiet chrome, structured records, quick retrieval. */
+body{font-family:"Segoe UI",Arial,sans-serif;letter-spacing:-.1px}
+a{color:var(--brand);text-underline-offset:4px}
+:focus-visible{outline:3px solid #5777f3;outline-offset:3px}
+.top{color:var(--ink);background:#fff;padding:23px max(28px,calc((100vw - 1200px)/2));border-bottom:1px solid var(--line)}
+.brand{display:inline-flex;gap:11px;align-items:center;font-size:1.25rem;text-decoration:none;letter-spacing:-.6px}
+.brand-mark{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;font-size:1.8125rem;letter-spacing:-4px;padding-right:5px;font-weight:400;border:1.5px solid var(--brand);border-radius:10px 10px 10px 3px}
+.workspace-label{font-size:0.75rem;font-weight:400;letter-spacing:0;border-left:1px solid var(--line);padding-left:16px;margin-left:10px;color:var(--mut)}
+.tag-line{font-size:0.75rem;color:var(--mut);opacity:1;margin-top:7px;padding-left:45px}
+.bar{padding:13px max(28px,calc((100vw - 1200px)/2));gap:10px;background:#fff}
+.page{max-width:1256px;padding:34px 28px 70px}
+.page-heading{padding:2px 0 27px}.eyebrow{font-size:0.75rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--mut)}
+h1{font-size:2rem;font-weight:500;letter-spacing:-.9px;line-height:1.3;margin:12px 0 8px}
+h2{font-size:1.125rem;font-weight:600;margin-bottom:16px;letter-spacing:-.2px}
+.btn{min-height:40px;border-color:#d8dff3;border-radius:8px;font-weight:500;padding:9px 15px}
+.btn.primary,.btn.on{background:var(--brand);border-color:var(--brand)}
+.btn:hover{border-color:var(--brand);background:#eff3ff}
+.btn.primary:hover,.btn.on:hover{background:#1836b7;color:#fff}
+.cohort-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat{font:inherit;text-align:left;border:1px solid var(--line);border-radius:12px;background:#fff;min-height:105px;padding:18px 22px;color:var(--ink);cursor:pointer}
+.stat span{display:block;font-size:0.8125rem;color:var(--mut)}
+.stat b{display:block;font-weight:500;font-size:2rem;margin-top:6px;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat.selected{background:#eff3ff;border-color:#9aacf0}
+.stat:hover{border-color:#8da1eb}
+.data-caption{font-size:0.8125rem;max-width:900px;line-height:1.75;margin-bottom:22px}
+.list-tools{display:flex;gap:20px;align-items:center;justify-content:space-between;margin:22px 0 14px;font-size:0.8125rem;color:var(--mut)}
+.list-tools label{width:100%;max-width:380px}
+.list-tools input{display:block;width:100%;min-height:44px;background:#fff;border:1px solid #d8dff3;border-radius:9px;padding:10px 14px;font:inherit;color:var(--ink)}
+#listCount{white-space:nowrap}
+.list-surface{border:1px solid var(--line);border-radius:12px;background:#fff}
+.list th{padding:15px 18px;background:#f5f7fd;border-bottom:1px solid var(--line);font-size:0.75rem;text-transform:uppercase;letter-spacing:.45px;white-space:nowrap}
+.list td{padding:20px 18px;font-size:0.875rem;line-height:1.65}
+.list td:first-child b{font-weight:600;letter-spacing:.3px}
+.list td:nth-child(3){max-width:300px;min-width:170px;font-size:0.75rem}
+.list .small{font-size:0.75rem}
+table.list tr.row:hover,table.list tr.row:focus{background:#f2f5ff;outline-offset:-3px}
+table.list tr.row[hidden]{display:none}
+.list tr:last-child td{border-bottom:0}
+.st{font-weight:500;gap:8px;line-height:1.5}
+.st i{width:8px;height:8px;flex-basis:8px}
+.tag{font-size:0.75rem;border-radius:5px;font-weight:600;padding:2px 6px}
+.tag.sim{background:#eceff3;color:#5b6578}.tag.ok{background:#e7f0e3;color:#3f6342}
+.tag.need{background:#fbeae7;color:#9e443d}
+.limits{line-height:1.75;max-width:1000px;margin-top:24px}
+.card{border-radius:12px;padding:24px;margin-top:20px}
+.two{gap:20px}.two .card{margin-top:20px}
+.charts{gap:28px 30px}
+figcaption{font-size:0.875rem;margin-bottom:12px}
+figcaption .small{display:block;font-size:0.75rem;font-weight:400;margin-top:3px}
+table.data th{background:#f6f8ff;border-bottom-width:1px;padding:12px 10px;font-size:0.75rem}
+table.data td{padding:14px 10px;font-size:0.875rem}
+.kv td{line-height:1.8}
+.note{background:#f0f4ff;border-color:#dfe7ff;line-height:1.7;padding:14px 16px}
+.section-nav{display:flex;flex-wrap:wrap;gap:8px 20px;margin:22px 0 24px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.section-nav a{font-size:0.75rem;text-decoration:none;line-height:1.8}
+.section-nav a:hover{text-decoration:underline}
+.detail section[id]{scroll-margin-top:24px}
+.fld textarea{min-height:120px;line-height:1.7}
+.fld select,.fld textarea{border-color:#d8dff3}
+input[type=checkbox]{accent-color:var(--brand)}
+.empty{padding:65px 28px;font-size:0.9375rem;line-height:1.75}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:760px){.workspace-label{font-size:0.75rem;padding-left:10px;margin-left:0}.brand{gap:8px;font-size:1.125rem}.page{padding:26px 18px 50px}.top{padding:18px}.bar{padding:12px 18px}.cohort-stats{grid-template-columns:repeat(2,1fr);gap:12px}.stat{min-height:92px;padding:16px}.stat b{font-size:1.75rem}.card{padding:20px}.two{gap:0}h1{font-size:1.75rem}.tag-line{padding-left:0}.section-nav{gap:10px 18px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+/* Match the participant app's cobalt language with denser clinical surfaces. */
+.brand{color:#263252}.brand-mark{border:0;background:#2449e8;color:#fff;border-radius:11px;box-shadow:0 4px 10px #2449e81a}
+.top{border-bottom:0}.bar{border-bottom:1px solid #e9edfa}
+.btn{border-radius:22px;border-color:#e0e5f4}.btn.primary{box-shadow:0 4px 10px #2449e816}
+.card{border:1px solid #edf0f9;border-radius:19px;box-shadow:0 5px 22px #273e8d05}
+.cohort-stats{gap:18px}.stat{border-radius:18px;border-color:#edf0f9;box-shadow:0 5px 20px #2c419107;min-height:113px;padding:20px 24px}
+.stat.selected{background:#2449e8;color:#fff;border-color:#2449e8;box-shadow:0 8px 20px #2449e821}.stat.selected span{color:#e0e7ff}
+.stat span{font-size:0.75rem}.stat b{font-size:2.125rem;font-weight:450}
+.list-tools input{border-radius:24px;background:#fff;border-color:#e0e6f6;padding:12px 19px}
+.list-surface{border-radius:19px;border-color:#e9edf9;box-shadow:0 5px 25px #2c409105}
+.list th{background:#f9faff;color:var(--mut);font-size:0.75rem;padding-top:17px;padding-bottom:17px}
+.list td{padding-top:22px;padding-bottom:22px}.list td:first-child b{color:#334d9c}
+.tag.sim{background:#edf1ff;color:#4a5ca6}.tag.need{background:#fff0ec;color:#ad5345}.tag.ok{background:#eaf4eb;color:#46774d}
+.section-nav{background:#fff;border:1px solid #edf0f9;border-radius:16px;padding:12px 16px;gap:6px 9px;box-shadow:0 3px 16px #2c419005}
+.section-nav a{background:#f3f6ff;border-radius:20px;padding:7px 12px;color:#4a5ca6;font-size:0.75rem}
+.section-nav a:hover{background:#eaf0ff;text-decoration:none;color:#2449e8}
+.fld select,.fld textarea{border-radius:13px;border-color:#dfe6f6}
+@media(max-width:760px){.cohort-stats{gap:12px}.stat{min-height:100px;padding:18px}.stat b{font-size:1.875rem}.card{border-radius:17px}}
+@media (max-width:760px){.two,.charts{grid-template-columns:1fr}.page{padding:12px}}
+@media print{
+  body{background:#fff;font-size:0.75rem}
+  .noprint,.bar{display:none!important}
+  .top{background:#fff;color:#000;padding:0 0 6px;border-bottom:1px solid #000}
+  .page{max-width:none;padding:0}
+  .card{border:1px solid #999;break-inside:avoid;margin:8px 0;padding:8px 10px}
+  .charts{grid-template-columns:1fr 1fr}
+  ul.check li.prompted{background:none}
+}

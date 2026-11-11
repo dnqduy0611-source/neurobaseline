@@ -1,0 +1,128 @@
+{
+ "brainbit-cn.csv": {
+  "fs": 250,
+  "channels": [
+   "T3",
+   "T4",
+   "O1",
+   "O2"
+  ],
+  "kind": "brainbit",
+  "features": {
+   "n_epochs": 45,
+   "n_kept": 39,
+   "rel_delta": 0.3187784466082421,
+   "rel_theta": 0.13233664078682655,
+   "rel_alpha": 0.4482830790696973,
+   "rel_beta": 0.10060183353523405,
+   "theta_alpha": 0.2952077536842549,
+   "slow_ratio": 0.8218755462855398,
+   "apf_cog": 10.314059247943174
+  }
+ },
+ "muse-cn.csv": {
+  "fs": 256,
+  "channels": [
+   "TP9",
+   "AF7",
+   "AF8",
+   "TP10"
+  ],
+  "kind": "muse",
+  "features": {
+   "n_epochs": 45,
+   "n_kept": 42,
+   "rel_delta": 0.49896623355172165,
+   "rel_theta": 0.15201996802613496,
+   "rel_alpha": 0.23992835736348764,
+   "rel_beta": 0.10908544105865577,
+   "theta_alpha": 0.6336056716956852,
+   "slow_ratio": 1.8652162307648017,
+   "apf_cog": 9.894676843073235
+  }
+ },
+ "brainbit-ad.csv": {
+  "fs": 250,
+  "channels": [
+   "T3",
+   "T4",
+   "O1",
+   "O2"
+  ],
+  "kind": "brainbit",
+  "features": {
+   "n_epochs": 45,
+   "n_kept": 43,
+   "rel_delta": 0.44302596804589794,
+   "rel_theta": 0.28689314849887876,
+   "rel_alpha": 0.16856687112828742,
+   "rel_beta": 0.1015140123269358,
+   "theta_alpha": 1.701954521541421,
+   "slow_ratio": 2.7025945235616433,
+   "apf_cog": 8.495006120977305
+  }
+ },
+ "muse-ad.csv": {
+  "fs": 256,
+  "channels": [
+   "TP9",
+   "AF7",
+   "AF8",
+   "TP10"
+  ],
+  "kind": "muse",
+  "features": {
+   "n_epochs": 45,
+   "n_kept": 44,
+   "rel_delta": 0.4177791649294954,
+   "rel_theta": 0.3085860992140218,
+   "rel_alpha": 0.17186964066346666,
+   "rel_beta": 0.10176509519301616,
+   "theta_alpha": 1.7954660172837387,
+   "slow_ratio": 2.6545067893883343,
+   "apf_cog": 8.305586060307043
+  }
+ },
+ "brainbit-ftd.csv": {
+  "fs": 250,
+  "channels": [
+   "T3",
+   "T4",
+   "O1",
+   "O2"
+  ],
+  "kind": "brainbit",
+  "features": {
+   "n_epochs": 45,
+   "n_kept": 44,
+   "rel_delta": 0.5421950798499382,
+   "rel_theta": 0.09067613260420634,
+   "rel_alpha": 0.09498524205752412,
+   "rel_beta": 0.27214354548833125,
+   "theta_alpha": 0.9546339056470675,
+   "slow_ratio": 1.723839791166192,
+   "apf_cog": 9.404439869299564
+  }
+ },
+ "muse-ftd.csv": {
+  "fs": 256,
+  "channels": [
+   "TP9",
+   "AF7",
+   "AF8",
+   "TP10"
+  ],
+  "kind": "muse",
+  "features": {
+   "n_epochs": 45,
+   "n_kept": 44,
+   "rel_delta": 0.5612344453266196,
+   "rel_theta": 0.09858428751167497,
+   "rel_alpha": 0.09426634864839013,
+   "rel_beta": 0.245914918513315,
+   "theta_alpha": 1.0458057294590946,
+   "slow_ratio": 1.93960925110156,
+   "apf_cog": 9.52135250566668
+  }
+ }
+}

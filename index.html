@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f5f7ff">
+<meta name="robots" content="noindex">
+<title>NeuroBaseline</title>
+<style>
+:root{--ink:#222b45;--mut:#6c7490;--line:#e5e9f6;--bg:#f5f7ff;--brand:#2449e8}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+main{max-width:860px;margin:0 auto;padding:40px 22px 56px}
+.brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:650;letter-spacing:-.5px}
+.mark{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;background:var(--brand);color:#fff;font-size:24px;line-height:1}
+h1{font-size:38px;line-height:1.15;letter-spacing:-1.2px;font-weight:600;margin:34px 0 14px;max-width:680px}
+.lead{font-size:19px;color:var(--mut);max-width:640px;margin:0 0 26px}
+.note{background:#fff;border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:12px;padding:14px 16px;margin:0 0 30px;font-size:15.5px}
+h2{font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin:34px 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+a.card{display:block;background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;color:inherit;text-decoration:none;transition:border-color .16s}
+a.card:hover,a.card:focus-visible{border-color:var(--brand)}
+a.card b{display:block;font-size:18px;margin-bottom:4px}
+a.card span{color:var(--mut);font-size:15px}
+a.card.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+a.card.primary span{color:#dbe2ff}
+ul.docs{list-style:none;margin:0;padding:0;background:#fff;border:1px solid var(--line);border-radius:16px}
+ul.docs li{padding:14px 20px;border-top:1px solid var(--line)}
+ul.docs li:first-child{border-top:0}
+ul.docs a{color:var(--brand);font-weight:600;text-decoration:none}
+ul.docs a:hover{text-decoration:underline}
+ul.docs span{display:block;color:var(--mut);font-size:15px}
+footer{margin-top:40px;color:var(--mut);font-size:14px}
+:focus-visible{outline:3px solid #5777f3;outline-offset:2px}
+@media (max-width:560px){h1{font-size:30px}main{padding-top:28px}}
+@media (prefers-reduced-motion:reduce){a.card{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <div class="brand"><span class="mark" aria-hidden="true">n</span>NeuroBaseline</div>
+  <h1>Protecting brain health earlier by comparing each person with themselves.</h1>
+  <p class="lead">Short cognitive tasks on a phone, a personal baseline, and a clear rule for when a change deserves a clinician's attention.</p>
+  <p class="note"><b>Research prototype.</b> NeuroBaseline is a screening and monitoring tool. It makes no diagnosis and is not a medical device. The example profile and the clinician's cohort are simulated; no real person's data are shown.</p>
+
+  <h2>Try it</h2>
+  <div class="grid">
+    <a class="card primary" href="app/index.html?demo=1"><b>See an example profile</b><span>Ten months of simulated history for one fictional person, ending in a confirmed change.</span></a>
+    <a class="card" href="app/index.html"><b>Start as a participant</b><span>Four short tasks, about five minutes. Best on a phone. Results stay on your device.</span></a>
+    <a class="card" href="app/clinician.html"><b>Open the clinician view</b><span>Priority list, per-person summary and review record, with a simulated cohort.</span></a>
+  </div>
+
+  <h2>Read</h2>
+  <ul class="docs">
+    <li><a data-doc href="docs/TECHNICAL_DOCUMENTATION.md">Technical documentation</a><span>Solution, methods, evidence, responsible AI, assumptions, dependencies and limitations.</span></li>
+    <li><a data-doc href="sim/REPORT.md">Simulation study</a><span>Six ways of raising a referral, compared at the same false-referral rate.</span></li>
+    <li><a data-doc href="eeg/REPORT.md">EEG analysis</a><span>Resting EEG from 88 people in a public dataset, reduced to headband electrode positions.</span></li>
+    <li><a data-doc href="nhanes/REPORT.md">Fixed cut-offs and schooling</a><span>What one cut-off for everyone does in a national survey of 3011 adults aged 60 and over.</span></li>
+    <li><a data-doc href="README.md">Developer guide</a><span>How the repository is organised and how to run the tests.</span></li>
+  </ul>
+
+  <footer>Future Health Digital Innovation Challenge · Challenge 08, Protecting Brain Health Earlier</footer>
+</main>
+<script>
+// On GitHub Pages, point the documents at the repository so that tables and diagrams are rendered.
+(function () {
+  var m = /^([^.]+)[.]github[.]io$/.exec(location.hostname), repo = location.pathname.split('/')[1];
+  if (!m || !repo) return;
+  var base = 'https://github.com/' + m[1] + '/' + repo + '/blob/main/';
+  document.querySelectorAll('a[data-doc]').forEach(function (a) { a.href = base + a.getAttribute('href'); });
+})();
+</script>
+</body>
+</html>

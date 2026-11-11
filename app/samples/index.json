@@ -1,0 +1,53 @@
+{
+ "note": "Derived from OpenNeuro ds004504 (CC0), Miltiadous et al. 2023. Clinical EEG re-referenced to Fpz and resampled to imitate a consumer headband; first 3 minutes.",
+ "samples": [
+  {
+   "file": "brainbit-cn.csv",
+   "kind": "brainbit",
+   "fs": 250,
+   "group": "CN",
+   "label": "healthy control",
+   "source": "ds004504 sub-057"
+  },
+  {
+   "file": "muse-cn.csv",
+   "kind": "muse",
+   "fs": 256,
+   "group": "CN",
+   "label": "healthy control",
+   "source": "ds004504 sub-057"
+  },
+  {
+   "file": "brainbit-ad.csv",
+   "kind": "brainbit",
+   "fs": 250,
+   "group": "AD",
+   "label": "Alzheimer's disease",
+   "source": "ds004504 sub-018"
+  },
+  {
+   "file": "muse-ad.csv",
+   "kind": "muse",
+   "fs": 256,
+   "group": "AD",
+   "label": "Alzheimer's disease",
+   "source": "ds004504 sub-018"
+  },
+  {
+   "file": "brainbit-ftd.csv",
+   "kind": "brainbit",
+   "fs": 250,
+   "group": "FTD",
+   "label": "frontotemporal dementia",
+   "source": "ds004504 sub-078"
+  },
+  {
+   "file": "muse-ftd.csv",
+   "kind": "muse",
+   "fs": 256,
+   "group": "FTD",
+   "label": "frontotemporal dementia",
+   "source": "ds004504 sub-078"
+  }
+ ]
+}

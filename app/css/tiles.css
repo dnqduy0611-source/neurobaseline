@@ -1,0 +1,78 @@
+/* NeuroBaseline – home built from tiles: one accent card, white tiles with icon chips, a compact header.
+   Loaded after app.css. The task screens (#stage) are not touched here. */
+
+/* ---------- header ---------- */
+.top{padding:18px 0 8px;margin-bottom:10px;border-bottom:0}
+.banner.demo{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;padding:9px 10px 9px 16px;border-radius:16px;font-size:.8125rem;line-height:1.45;margin-bottom:4px}
+.banner.demo .text-btn{flex:none;min-height:44px;padding:6px 14px;border-radius:99px;background:#fff;color:#2f4bb5;font-weight:600;text-decoration:none}
+
+/* ---------- icon chip ---------- */
+.activity-icon{flex:none;width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:#eef2ff;color:#2449e8}
+.activity-icon .ui-icon{width:22px;height:22px}
+
+/* ---------- home ---------- */
+.home-layout.tiles{gap:16px 22px;padding-top:8px;align-items:start}
+.tiles .home-heading{margin-bottom:2px}
+.tiles .session-card{padding:26px 24px 20px;border-radius:26px;grid-row:auto}
+.tiles .session-card .session-meta{margin:10px 0 20px}
+.hero-cta{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;border-radius:20px;padding:9px 9px 9px 22px;min-height:60px;margin-top:0}
+/* the figure first: a large numeral, quiet words around it */
+.due-num{display:inline-block;margin:0 .14em;font-size:2.75rem;font-weight:700;letter-spacing:-1.5px;line-height:1;vertical-align:-.05em}
+.cta-arrow{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#2449e8;color:#fff;font-size:1.125rem;line-height:1}
+.tiles .session-card>.small{margin:14px 0 0}
+
+.activity-grid{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.tile{position:relative;display:flex;flex-direction:column;gap:16px;min-height:122px;min-width:0;padding:18px 16px 16px;background:#fff;border:1px solid #eef0fa;border-radius:22px;box-shadow:0 7px 28px #283e8d0a}
+.tile b{font-size:.9375rem;font-weight:600;line-height:1.35;overflow-wrap:anywhere}
+.tile-num{position:absolute;top:20px;right:18px;font-size:.75rem;font-weight:600;color:var(--mut);font-variant-numeric:tabular-nums}
+
+.tiles .home-status>.card.status{gap:16px;border-radius:24px;padding:22px}
+.ring{flex:none;width:56px;height:56px;color:var(--ink)}
+.ring-track{fill:none;stroke:#e3e9fb;stroke-width:5}
+.ring-arc{fill:none;stroke:var(--brand);stroke-width:5;stroke-linecap:round}
+.ring text{font:700 14px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;fill:currentColor}
+.status.green .ring-arc{stroke:var(--green)}.status.green .ring-track{stroke:#d3e7d7}
+.status.yellow .ring-arc{stroke:var(--yellow)}.status.yellow .ring-track{stroke:#efe2bd}
+.status.red .ring-arc{stroke:var(--red)}.status.red .ring-track{stroke:#f0d2cd}
+
+/* ---------- results card: segmented control and two figures ---------- */
+.tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));gap:4px;padding:4px;margin:12px 0 14px;background:#f1f4fd;border-radius:16px}
+.tab{min-height:44px;padding:8px 10px;border:0;border-radius:12px;background:transparent;color:var(--mut);font-size:.8125rem;font-weight:600;line-height:1.3}
+.tab.on{background:#fff;color:#2449e8;box-shadow:0 2px 8px #283e8d14}
+.stat-tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0 0 16px}
+.stat-tile{display:flex;flex-direction:column;gap:2px;min-width:0;padding:14px 16px;border-radius:18px;background:#f6f8ff;border:1px solid #e8edfb}
+.stat-tile span,.stat-tile small{font-size:.75rem;line-height:1.5;color:var(--mut)}
+.stat-tile b{font-size:1.75rem;font-weight:700;letter-spacing:-.6px;line-height:1.25}
+.stat-tile.accent{background:var(--brand);border-color:var(--brand);color:#fff}
+.stat-tile.accent span,.stat-tile.accent small{color:#e1e8ff}
+
+/* ---------- optional parts as tiles ---------- */
+.extra-tiles{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:14px}
+.extra-tile{display:grid;grid-template-columns:42px minmax(0,1fr);gap:14px;align-items:start;padding:20px;background:#fff;border:1px solid #eef0fa;border-radius:22px;box-shadow:0 7px 28px #283e8d0a}
+.extra-tile>.card{margin:0;padding:0;width:auto;max-width:none;background:none;border:0;border-radius:0;box-shadow:none}
+.extra-tile h3{margin:2px 0 6px;font-size:1rem}
+.extra-tile p{margin:0 0 12px;font-size:.875rem;line-height:1.6}
+.extra-tile .btn{display:inline-flex;align-items:center;width:auto;min-height:44px;margin:0;padding:8px 18px;border:0;border-radius:99px;background:#eef2ff;color:#2449e8;font-size:.875rem}
+
+/* ---------- settings: headed cards, actions as rows ---------- */
+.set-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.set-head h3{margin:0}
+.set-head .activity-icon{width:38px;height:38px;border-radius:12px}
+.set-head .activity-icon .ui-icon{width:20px;height:20px}
+.screen-settings .card .btn:not(.danger){display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;min-height:52px;margin-top:8px;padding:12px 16px;border:0;border-radius:14px;background:#f6f8ff;font-weight:600}
+.screen-settings .card .btn:not(.danger)::after{content:'›';content:'›' / '';flex:none;font-size:1.375rem;line-height:1;color:#4a5ca6}
+
+@media(max-width:800px){
+  .activity-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+}
+@media(max-width:620px){
+  .top{padding-top:16px}
+  /* status: the ring sits beside the heading, the explanation uses the full width */
+  .tiles .home-status>.card.status{display:block;padding:20px}
+  .tiles .status .ring{float:left;margin:0 14px 4px 0}
+  .tiles .status .grow h2{min-height:60px;display:flex;align-items:center;margin:0}
+  .tiles .session-card{padding:24px 20px 18px}
+  .tile{min-height:112px;padding:16px 14px 14px;border-radius:20px}
+  .extra-tile{padding:18px 16px}
+  .stat-tile{padding:12px 14px}.stat-tile b{font-size:1.5rem}
+}
