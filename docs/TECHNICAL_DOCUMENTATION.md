@@ -7,7 +7,7 @@
 | Team | Braincore |
 | Team lead and contact | DO NGOC QUOC DUY, dnqduy.0611@gmail.com |
 | Members | DO NGOC QUOC DUY (individual entry, one member) |
-| Document version | 1.3, 12 November 2026 (see [revision history](#revision-history)) |
+| Document version | 1.4, 12 November 2026 (see [revision history](#revision-history)) |
 | Repository | https://github.com/dnqduy0611-source/neurobaseline |
 | Hosted prototype | https://dnqduy0611-source.github.io/neurobaseline/ |
 
@@ -21,6 +21,7 @@
 | 1.1 | 11 November 2026 | Added the analysis of fixed cut-offs and education in NHANES 2011–2014 (section 7.3) and what it means for the simulation's assumptions. |
 | 1.2 | 12 November 2026 | Change of device: detection and a new baseline period (sections 6.3, 10 and 12). Backup and restore, with checks on the file (section 5). Example profile reachable from the first screen. |
 | 1.3 | 12 November 2026 | Interface and accessibility (section 6.10). A report of difficulty seeing or tapping reaches the clinician view. Hosted prototype and repository added. 71 automated tests. |
+| 1.4 | 12 November 2026 | Simulation extended with a Kalman filter, baselines that keep adapting, and noise that lasts for weeks (sections 7.2, 8, 12 and 14). Offline only; the rule in the app is unchanged. 73 automated tests. |
 
 ---
 
@@ -62,9 +63,9 @@
 **What the evidence shows so far.**
 
 - *Public EEG data (88 people).* The theta/alpha ratio alone separates Alzheimer's disease from healthy controls with AUC 0.87 (95 % CI 0.78–0.95). With only four channels at consumer-headband positions the AUC is 0.87–0.88. A machine-learning classifier did not improve on that single ratio.
-- *Simulation (10 000 simulated people per cohort, 36 months).* With every method tuned to the same false-referral rate of 5 %, a fixed cut-off wrongly refers stable people with low education four times as often as those with high education (8.9 % vs 2.1 %); personal-baseline methods refer all education groups equally. The rule built into the app finds 80 % of slow decliners within 24 months at a 5.8 % false-referral rate.
+- *Simulation (10 000 simulated people per cohort, 36 months).* With every method tuned to the same false-referral rate of 5 %, a fixed cut-off wrongly refers stable people with low education four times as often as those with high education (8.9 % vs 2.1 %); personal-baseline methods refer all education groups equally. The rule built into the app finds 80 % of slow decliners within 24 months at a 5.8 % false-referral rate. A baseline that keeps adapting to new sessions absorbs the decline it should detect (29 % found against a fixed baseline, 4–15 % against adaptive ones).
 - *National survey data (NHANES 2011–2014, 3011 adults aged 60 and over).* On a standard symbol–digit test, college graduates score 2.2 SDs above people who did not finish 9th grade at the same age and sex. A single cut-off that flags 5 % of people with no memory complaint flags 40.2 % of the least schooled and 0.7 % of college graduates.
-- *Software.* 71 automated tests pass (61 for the app, 10 for the model).
+- *Software.* 73 automated tests pass (61 for the app, 12 for the model).
 
 **What it does not show.** No real person has been followed over time with this system. The EEG data are cross-sectional and from clinical electrodes. The simulation rests on assumed parameters. Section 12 lists the limits in full.
 
@@ -127,6 +128,7 @@ Everything described here was built during the challenge. Nothing existed before
 | EEG signal processing and analysis on public data | Offline scripts, results reported | `eeg/` |
 | Hierarchical (population → individual) model | Offline, unit-tested; the population part is not in the app | `sim/model.py` |
 | Simulation study of six detection methods | Offline, results reported | `sim/` |
+| Kalman filter and adaptive baselines compared with the trend test | Offline, unit-tested, results reported; not in the app | `sim/kalman.py`, `sim/run_kalman.py`, `sim/stress_kalman.py` |
 | Analysis of NHANES 2011–2014: fixed cut-offs and education | Offline, results reported | `nhanes/` |
 | EEG in the app: recording-file import, analysis in the browser, personal EEG baseline | Working, unit-tested against the Python pipeline | `app/js/eeg-core.js`, `app/js/eeg-ui.js` |
 | Live Bluetooth connection to a headband | Not built. A simulated stream that plays a recorded file shows the intended flow | – |
@@ -173,7 +175,7 @@ Repository map:
 | `app/` | Participant app and clinician view |
 | `app/tests/` | Unit tests (Node.js) |
 | `eeg/` | EEG analysis on OpenNeuro ds004504; `REPORT.md` |
-| `sim/` | Hierarchical model, simulation study; `REPORT.md` |
+| `sim/` | Hierarchical model, simulation study, Kalman filter comparison; `REPORT.md` |
 | `nhanes/` | Fixed cut-offs and education in NHANES 2011–2014; `REPORT.md` |
 | `docs/` | This document |
 
@@ -360,7 +362,23 @@ Not done: no test with a screen reader on a phone (TalkBack, VoiceOver), none wi
 | First version: red on a repeated change beyond RCI 1.96 | 18.3 % | 18 % / 38 % / 62 % | 54 % |
 | Current: section 6.5 | 5.8 % | 10 % / 41 % / 80 % | 66 % |
 
-**Limits.** The generating parameters are assumptions. Session noise is independent between sessions and between indicators, which favours the trend test; real spells of poor sleep or illness would raise its false-referral rate. Decline is linear. The trend test was added after the first results showed that single-session rules found few slow decliners; it was not pre-specified.
+**A Kalman filter, and baselines that keep adapting** (added in version 1.4; [`sim/REPORT.md`](../sim/REPORT.md) section 8). Would a state-space model do better than the trend test, and what happens when the baseline itself keeps learning? The Kalman filter tracks a level and a slope for each indicator; after the five burst sessions its level is exactly the hierarchical baseline of section 6.7. Its one free parameter, how much the slope may change per month, was chosen on a separate tuning cohort. The adaptive baselines compare each session with a running mean of all earlier sessions, or with a filter that also forgets older sessions. Same cohorts as above, every method tuned to 5 % false referrals.
+
+| Method | Slow decline found within 12 / 18 / 24 months | Sudden drop found within 6 months |
+|---|---|---|
+| Trend test (in the app) | 9 % / 34 % / 76 % | 65 % |
+| Kalman filter (level and slope) | 4 % / 50 % / 90 % | 10 % |
+| Trend test or Kalman filter | 6 % / 44 % / 88 % | 53 % |
+| One session against the fixed burst baseline | 5 % / 13 % / 29 % | 30 % |
+| One session against a running mean of all sessions | 4 % / 9 % / 15 % | 19 % |
+| One session against a baseline that forgets older sessions | 3 % / 4 % / 5 % | 11 % |
+
+- **The Kalman filter finds more slow decline** (+14.8 points within 24 months; +12.6 to +16.9 across the eight cohorts), and more still when the tasks are less reliable (65 % vs 38 %) or the decline is slower (39 % vs 19 %). It pays with sudden drops and with the first year, because it assumes that a slope changes slowly. Used together with the trend test it keeps most of both.
+- **A baseline that keeps adapting absorbs the decline it should detect.** The more a baseline learns from recent sessions, the less it finds. This is why the app fixes the baseline after the burst and reads change from a trend that estimates level and slope together.
+- **Noise that lasts for weeks.** With thresholds set under independent noise, a month-to-month correlation of 0.3 raises false referrals from 5 % to 9.7 % for the trend test and for the Kalman filter alike; a correlation of 0.5 raises them to 14.1 % and 14.6 %. Detection within 24 months stays at 76 % for the trend test and falls from 90 % to 85 % for the Kalman filter.
+- **Not in the app.** The simulated decline is a straight line that never stops, which is the shape this filter expects, so the gain may be smaller on real trajectories. The filter is a candidate for the pilot (section 14), with its parameter set from real data.
+
+**Limits.** The generating parameters are assumptions. Session noise is independent between sessions and between indicators, which favours the trend test; real spells of poor sleep or illness would raise its false-referral rate (quantified above). Decline is linear. The trend test was added after the first results showed that single-session rules found few slow decliners, and the Kalman filter later still; neither was pre-specified.
 
 ### 7.3 Fixed cut-offs and education in national survey data
 
@@ -391,7 +409,7 @@ The two flagging columns are for people who report no worsening of memory.
 | `app/tests/clin.test.js` | 10 | File sanitisation, priority order, review logic, checklist prompts, baseline period, reported access difficulty |
 | `app/tests/backup.test.js` | 6 | Acceptance of a valid backup, refusal of foreign, demo and damaged files, removal of markup |
 | `app/tests/eeg.test.js` | 8 | Reading recording files, agreement with the Python pipeline, rejection of poor recordings, personal EEG baseline |
-| `sim/test_model.py` | 10 | Parameter recovery, shrinkage limits, trend test, calibration |
+| `sim/test_model.py` | 12 | Parameter recovery, shrinkage limits, trend test, calibration, Kalman filter against the hierarchical baseline, adaptive baselines |
 
 The in-app EEG processing reproduces the Python pipeline on six real recordings: relative band powers within 0.01, theta/alpha ratio within 3 %, alpha centre of gravity within 0.03 Hz.
 
@@ -413,6 +431,8 @@ A QA robot (`index.html?qa=1`) plays complete sessions automatically. It was use
 **Safety before analysis.** Four red-flag questions precede every session. Any "yes" stops the session, advises urgent care, and is shown first in the clinician's list.
 
 **Explainable by design.** Every flag is produced by two named statistics and shows its reason: the indicator, the value, the person's usual level and the limit, or the areas that carry a trend. Machine learning was tested where it could help (EEG classification) and left out of the decision path when it did not outperform a single interpretable ratio.
+
+**Learning from personal data, with a fixed point of comparison.** The system learns each person's usual level and variability from their own sessions. It does not let that baseline drift with every new session: in simulation a baseline that keeps adapting found 4–15 % of slow decliners where a fixed one found 29 % (section 7.2). More flexible models are compared offline first, and none enters the status rule without data from real people.
 
 **Fairness measured, not assumed.** False-referral and detection rates are reported by education level, including the case where norms come from another population.
 
@@ -517,11 +537,11 @@ No data were collected from people during the challenge. The organisers provided
 **Method**
 
 5. Slow decline is slow to detect: a median of about 20 months in the main simulation scenario.
-6. The trend test can mistake a spell of poor sleep or illness lasting weeks for decline. Reported unusual days are excluded; unreported ones are not.
+6. The trend test can mistake a spell of poor sleep or illness lasting weeks for decline. Reported unusual days are excluded; unreported ones are not. In simulation a month-to-month noise correlation of 0.3 roughly doubled false referrals (5 % to 9.7 %); the real correlation is unknown.
 7. The app has no practice correction and no population norms, so it cannot judge the very first sessions.
 8. Picture memory is likely to be near ceiling in healthy adults, which limits its reliability.
 9. Reaction times depend on the device. The app detects a change of operating system, screen size or input type and offers to start a new baseline of four sessions; sessions from the earlier device are kept but no longer compared. Two devices of the same model cannot be told apart, the participant can declare the device unchanged, and a new baseline costs about two weeks without monitoring.
-10. The trend test was introduced after seeing first simulation results.
+10. The trend test was introduced after seeing first simulation results, and the Kalman filter comparison after that. The Kalman filter is not in the app, and its advantage rests on a simulated decline that is exactly linear.
 
 **Product**
 
@@ -560,8 +580,8 @@ No data were collected from people during the challenge. The organisers provided
 | Stage | Question | Design | Measures |
 |---|---|---|---|
 | 0. Reliability pilot | Are the tasks usable and stable? | 20–30 adult volunteers, five sessions in two weeks, plus one run with the non-writing hand as a known change | Completion, session duration, test–retest reliability, within-person SD, practice curve, detection of the known change |
-| 1. Normative and reliability study | How do scores vary with age, education and language in the intended population? | Stratified sample, Arabic and English, three months | Norms, reliability by subgroup, false-referral rate in people presumed stable |
-| 2. Prospective accuracy study | Does a red status correspond to clinically confirmed change? | Primary-care cohort aged 50 and over, 12–24 months, reference neuropsychological assessment for flagged people and a sample of unflagged people | Sensitivity, specificity, ability to identify meaningful change, false-referral burden, time to clinical assessment, all by language, age and education |
+| 1. Normative and reliability study | How do scores vary with age, education and language in the intended population? | Stratified sample, Arabic and English, three months | Norms, reliability by subgroup, false-referral rate in people presumed stable, month-to-month correlation of session noise |
+| 2. Prospective accuracy study | Does a red status correspond to clinically confirmed change? | Primary-care cohort aged 50 and over, 12–24 months, reference neuropsychological assessment for flagged people and a sample of unflagged people | Sensitivity, specificity, ability to identify meaningful change, false-referral burden, time to clinical assessment, all by language, age and education; trend test and Kalman filter compared on the same trajectories |
 | 2b. Headband sub-study | Is a headband stable enough within a person? | Repeated 3-minute recordings over weeks in a subset | Test–retest reliability and within-person SD of the theta/alpha ratio and alpha frequency; signal-quality failure rate |
 
 Sample sizes for stages 1 and 2 will be set from the reliability and within-person SD measured in stage 0. Each stage has a stopping rule: if stage 0 shows test–retest reliability too low for individual change detection, the tasks are redesigned before stage 1.

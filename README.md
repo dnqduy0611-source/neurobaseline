@@ -24,7 +24,7 @@ Research prototype for the Future Health Digital Innovation Challenge, Challenge
 | `app/tests/eeg.test.js` | Unit tests for the in-app EEG processing, checked against the Python pipeline (8 tests). |
 | `app/samples/` | Six short headband-style EEG recordings derived from OpenNeuro ds004504 (CC0), 12 MB. |
 | `eeg/` | Python analysis of public EEG data (OpenNeuro ds004504): do simple spectral features separate dementia from healthy controls, and do headband-position channels keep that? See [`eeg/REPORT.md`](eeg/REPORT.md). |
-| `sim/` | The hierarchical (population → individual) model, a trend test, and a simulation study comparing six ways of raising a referral at the same false-referral rate. Simulated data. See [`sim/REPORT.md`](sim/REPORT.md). |
+| `sim/` | The hierarchical (population → individual) model, a trend test, a simulation study comparing six ways of raising a referral at the same false-referral rate, and a comparison with a Kalman filter and with baselines that keep adapting. Simulated data. See [`sim/REPORT.md`](sim/REPORT.md). |
 | `nhanes/` | Real-data check on NHANES 2011–2014: how a single cut-off on a symbol–digit test treats people with different schooling. See [`nhanes/REPORT.md`](nhanes/REPORT.md). |
 
 ## Run it
