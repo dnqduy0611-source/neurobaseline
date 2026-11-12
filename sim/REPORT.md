@@ -136,6 +136,31 @@ After this study the app's light logic was changed. `run_app_rule.py` runs the a
 - False referrals are the same across education levels (5.9 %, 5.8 %, 5.8 %).
 - The limits were chosen from a small grid of candidates on two cohorts and then checked on these eight. They were not tuned on real data.
 
+## 8. A Kalman filter, and what an adaptive baseline does
+
+Added after sections 1–7. `kalman.py` adds two kinds of state-space method; `run_kalman.py` runs them on the same cohorts as `run_simulation.py` (same seeds, every method tuned to 5 % false referrals). Full tables: [`results/kalman.md`](results/kalman.md); stress test: [`results/kalman_stress.md`](results/kalman_stress.md).
+
+- **Kalman filter, local linear trend.** For each indicator the filter tracks a level and a slope. The level has no noise of its own; the slope may change a little every month (SD *q*). Before the burst the level starts at the population prediction with the between-person SD, so after the five burst sessions the level estimate is exactly the hierarchical baseline (checked in `test_model.py`). The statistic is −slope / SD(slope), summed over indicators / √3. *q* = 0.004 per month was chosen on a separate tuning cohort, not on the cohorts compared below.
+- **Adaptive baselines.** Each session is compared with a baseline that keeps learning: a running mean of all sessions so far, or a filter that also forgets older sessions (level noise 0.1, 0.25 or 0.5 × the within-person SD). For comparison, the same single-session statistic against the fixed burst baseline.
+
+Main scenario, 8 cohorts of 10 000:
+
+| Method | Slow decline found within 12 months | 18 months | 24 months | Median delay | Sudden drop found within 6 months |
+|---|---|---|---|---|---|
+| Trend test (in the app) | 9 % | 34 % | 76 % | 20.2 months | 65 % |
+| Kalman filter | 4 % | 50 % | 90 % | 18.0 months | 10 % |
+| Trend test or Kalman filter | 6 % | 44 % | 88 % | 18.7 months | 53 % |
+| Single session vs fixed burst baseline | 5 % | 13 % | 29 % | more than 24 | 30 % |
+| Single session vs running mean | 4 % | 9 % | 15 % | more than 24 | 19 % |
+| Single session vs forgetting baseline (0.25 × SD) | 3 % | 4 % | 5 % | more than 24 | 11 % |
+
+- **The Kalman filter finds more slow decline:** +14.8 points within 24 months (paired over the 8 cohorts, range +12.6 to +16.9). The gain is larger when tests are less reliable (65 % vs 38 %), when decline is slower (39 % vs 19 %) and with more bad days (85 % vs 63 %); with a fast decline both find 100 %. It is the same across education levels.
+- **It pays for this with sudden drops** (10 % found within 6 months, against 65 %) and with the first year (4 % vs 9 %). A small *q* means the filter believes the slope changes slowly, so it needs a long history and reacts slowly to a step. Raising *q* trades one for the other (tuning cohort: *q* = 0.015 gives 68 % and 56 %).
+- **Combining them** keeps most of both: 88 % of slow decline and 53 % of sudden drops at the same 5 %.
+- **A baseline that keeps adapting absorbs the decline it should detect.** Against the fixed burst baseline a single-session rule finds 29 %; against a running mean 15 %; with forgetting 4–8 %. Whatever learns from new sessions must keep a fixed point of comparison, as the trend test and the Kalman filter both do by estimating level and slope together.
+- **Noise that lasts for weeks hurts both trend methods alike.** With thresholds set under independent noise, monthly noise correlated at 0.3 raises false referrals from 5 % to 9.7 % for both; at 0.5 to 14.1 % (trend test) and 14.6 % (Kalman). Detection holds up. Correlated noise is a real risk for any method that reads trends, and the pilot has to measure it.
+- **Caveat.** The simulated decline is a straight line that never stops, which is exactly the shape a small-*q* filter expects. With irregular or plateauing real trajectories the advantage may shrink.
+
 ## What this does and does not show
 
 **It supports:** comparing people with themselves; correcting for practice; and judging the trend over all sessions, not one session at a time.
@@ -158,4 +183,5 @@ After this study the app's light logic was changed. `run_app_rule.py` runs the a
 - **Tighten the red-light rule.** Done: red now needs z = 3.0, not 1.96.
 - **Say plainly how long detection takes.** With monthly five-minute sessions, a slow decline is found in about a year and a half to two years, not in months. Faster detection needs more reliable tasks or more frequent sessions; a cleverer rule alone will not do it.
 - **Use the population model for two jobs only:** judging the very first sessions, and removing the practice effect. After five sessions it adds little.
-- **Measure the two numbers that matter most in the pilot:** test–retest reliability and the within-person SD of each task.
+- **Measure the two numbers that matter most in the pilot:** test–retest reliability and the within-person SD of each task. Add a third: how strongly one month's noise carries over to the next (section 8).
+- **Candidate for the app after the pilot: the Kalman filter next to the trend test** (section 8). Not now: its gain depends on the shape of real trajectories, and *q* has to be set from real data.

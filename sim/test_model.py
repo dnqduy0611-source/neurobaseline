@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import numpy as np
 
+import kalman as KF
 import model as M
 import simulate as S
 
@@ -125,6 +126,31 @@ def t_calibration():
         assert abs(fpr - 0.05) < 0.012, (method, fpr)
 
 
+def t_kalman_burst_is_hierarchical_baseline():
+    # with no time step the filter's level after the 5 burst sessions must equal the shrunken baseline
+    c = S.make_cohort(P, 500, np.random.default_rng(5))
+    vals, base, sig, _, _ = KF.monthly_data(c, P, PM)
+    n = len(c['age'])
+    ml = np.broadcast_to(PM.predict(c['age'], c['edu']), (n, S.K)).copy()
+    p11 = np.broadcast_to(PM.sigma_b ** 2, (n, S.K)).copy()
+    zero = np.zeros((n, S.K))
+    for j in range(5):
+        ml, _, p11, _, _ = KF._update(ml, zero, p11, zero, zero, vals[:, j], sig ** 2, np.ones(n, bool))
+    w = 5 / (5 + sig ** 2 / PM.sigma_b ** 2)
+    close(ml, w * vals.mean(axis=1) + (1 - w) * PM.predict(c['age'], c['edu']), 1e-9)
+
+
+def t_kalman_and_adaptive_baseline():
+    c = S.make_cohort(P, 6000, np.random.default_rng(6))
+    data = KF.monthly_data(c, P, PM)
+    kal = KF.evaluate(c, P, KF.kalman_trend(c, P, PM, 0.004, data))
+    anchor = KF.evaluate(c, P, KF.single_session(c, P, PM, None, data))
+    adapt = KF.evaluate(c, P, KF.single_session(c, P, PM, 0.25, data))
+    assert abs(kal['false_referral'] - 0.05) < 0.01, kal['false_referral']
+    assert kal['slow_detected_24m'] > 0.7, kal['slow_detected_24m']                       # finds slow decline
+    assert adapt['slow_detected_24m'] < 0.5 * anchor['slow_detected_24m'], (adapt, anchor)  # an adaptive baseline absorbs it
+
+
 test('fit recovers between- and within-person SD', t_fit_variances)
 test('fit recovers age and education effects', t_fit_fixed_effects)
 test('fit recovers the practice curve', t_fit_practice)
@@ -135,4 +161,6 @@ test('CUSUM ignores ordinary sessions, accumulates a sustained shift, caps one w
 test('simulation: stricter threshold means fewer referrals', t_simulation_sanity)
 test('trend test separates decliners and tolerates a wrong baseline better than CUSUM', t_trend)
 test('calibration reaches a 5 % false-referral rate for every method', t_calibration)
+test('Kalman level after the burst equals the hierarchical baseline', t_kalman_burst_is_hierarchical_baseline)
+test('Kalman finds slow decline; an adaptive baseline absorbs it', t_kalman_and_adaptive_baseline)
 print(f'\n{n_tests} tests passed')

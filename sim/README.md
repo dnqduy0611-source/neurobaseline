@@ -113,6 +113,18 @@ Results at customary thresholds (cut-off 1.5 SD, z = 1.96, CUSUM h = 4, trend te
 python run_app_rule.py results
 ```
 
+## Kalman filter and adaptive baselines (`kalman.py`, `run_kalman.py`, `stress_kalman.py`)
+
+A local-linear-trend Kalman filter (level and slope per indicator, slope noise chosen on a separate tuning cohort) and single-session rules against baselines that keep adapting, compared with the trend test on the same cohorts. `stress_kalman.py` applies thresholds set under independent noise to noise that is correlated from month to month. Results: `REPORT.md` section 8. Each script takes well under a minute.
+
+```bash
+python run_kalman.py results
+```
+
+```bash
+python stress_kalman.py results
+```
+
 ## Tests (`test_model.py`)
 
-Ten checks: the fit recovers the parameters that generated the data; the shrinkage weight behaves at its limits; the RCI is the `k = 0` case; the CUSUM ignores ordinary sessions and caps a single wild one; the trend test separates decliners and is less misled by a wrong baseline than the CUSUM; stricter thresholds refer fewer people; calibration reaches the 5 % target for every method.
+Twelve checks (the last two cover `kalman.py`): the fit recovers the parameters that generated the data; the shrinkage weight behaves at its limits; the RCI is the `k = 0` case; the CUSUM ignores ordinary sessions and caps a single wild one; the trend test separates decliners and is less misled by a wrong baseline than the CUSUM; stricter thresholds refer fewer people; calibration reaches the 5 % target for every method.
