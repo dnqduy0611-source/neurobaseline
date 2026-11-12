@@ -52,7 +52,7 @@ node tests/backup.test.js
 ## How a session works (about 5 minutes)
 
 1. **Safety check.** Four red-flag questions (sudden one-sided weakness, speech trouble, new severe headache, acute confusion). Any "yes" stops the session and tells the person to get urgent care.
-2. **Today's context.** Sleep, illness, mood, medicine change. A session done on an unusual day is flagged.
+2. **Today's context.** Sleep quality, hours slept, illness, mood, medicine change. A session done on an unusual day is flagged. Hours slept are recorded only and do not flag a session.
 3. **Five parts:**
 
 | Part | Task | Main measure |

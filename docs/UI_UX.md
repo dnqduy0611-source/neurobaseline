@@ -12,7 +12,7 @@ Core colours: primary `#2449e8`, background `#f5f7ff`, text `#222b45`, secondary
 
 - Home: one accent card for the next session with a single call to action, a status card with a ring (sessions recorded while the usual level is being established, then the current status), four activity tiles, a results card with a segmented control and two figures (latest session, usual level and range), and the optional parts as tiles. Settings cards carry an icon heading and list their actions as rows.
 - Profile: three questions, one at a time, followed by an editable review.
-- Before a session: four context questions followed by setup instructions and an explicit start button.
+- Before a session: five context questions followed by setup instructions and an explicit start button.
 - Optional health profile: 21 individual questions, with back and skip controls. Numeric entries accept decimals and validate the existing bounds. Missing answers remain unknown; incomplete summaries say so explicitly.
 - Selecting an answer highlights it immediately and advances after 280 ms. The incoming question fades and moves by 7 px over 320 ms. Reduced-motion preferences disable visual animation.
 - Patient copy uses everyday English and Vietnamese. PHQ-2 questions, scoring, thresholds and task protocols are preserved.

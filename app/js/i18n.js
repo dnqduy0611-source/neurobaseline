@@ -56,6 +56,7 @@
     'em.note': 'This app cannot assess emergencies. No session was started.',
 
     'ctx.title': 'Today', 'ctx.sleep': 'How did you sleep last night?', 'ctx.sleep.poor': 'Badly', 'ctx.sleep.ok': 'OK', 'ctx.sleep.good': 'Well',
+    'ctx.sleepH': 'About how many hours did you sleep last night?', 'ctx.sleepH.lt5': 'Under 5 hours', 'ctx.sleepH.5': 'About 5 hours', 'ctx.sleepH.6': 'About 6 hours', 'ctx.sleepH.7': 'About 7 hours', 'ctx.sleepH.8plus': '8 hours or more',
     'ctx.unwell': 'Are you ill today (fever, pain, flu)?', 'ctx.mood': 'How is your mood today?', 'ctx.mood.low': 'Low', 'ctx.mood.ok': 'OK', 'ctx.mood.good': 'Good',
     'ctx.med': 'Any new or changed medicine in the last week?', 'ctx.setup': 'Put the phone flat on a table. Use the index finger of your writing hand. Find a quiet place.',
 
@@ -145,6 +146,7 @@
     'em.note': 'App này không đánh giá được tình huống cấp cứu. Buổi test chưa được bắt đầu.',
 
     'ctx.title': 'Hôm nay', 'ctx.sleep': 'Đêm qua bạn ngủ thế nào?', 'ctx.sleep.poor': 'Kém', 'ctx.sleep.ok': 'Tạm', 'ctx.sleep.good': 'Ngon',
+    'ctx.sleepH': 'Đêm qua bạn ngủ khoảng mấy tiếng?', 'ctx.sleepH.lt5': 'Dưới 5 tiếng', 'ctx.sleepH.5': 'Khoảng 5 tiếng', 'ctx.sleepH.6': 'Khoảng 6 tiếng', 'ctx.sleepH.7': 'Khoảng 7 tiếng', 'ctx.sleepH.8plus': 'Từ 8 tiếng trở lên',
     'ctx.unwell': 'Hôm nay bạn có ốm không (sốt, đau, cảm cúm)?', 'ctx.mood': 'Tâm trạng hôm nay?', 'ctx.mood.low': 'Thấp', 'ctx.mood.ok': 'Bình thường', 'ctx.mood.good': 'Tốt',
     'ctx.med': 'Tuần qua bạn có dùng thuốc mới hoặc đổi thuốc không?', 'ctx.setup': 'Đặt điện thoại nằm trên bàn. Dùng ngón trỏ của tay thuận. Chọn chỗ yên tĩnh.',
 

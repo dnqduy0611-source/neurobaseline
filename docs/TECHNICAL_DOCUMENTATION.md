@@ -7,7 +7,7 @@
 | Team | Braincore |
 | Team lead and contact | DO NGOC QUOC DUY, dnqduy.0611@gmail.com |
 | Members | DO NGOC QUOC DUY (individual entry, one member) |
-| Document version | 1.4, 12 November 2026 (see [revision history](#revision-history)) |
+| Document version | 1.5, 13 November 2026 (see [revision history](#revision-history)) |
 | Repository | https://github.com/dnqduy0611-source/neurobaseline |
 | Hosted prototype | https://dnqduy0611-source.github.io/neurobaseline/ |
 
@@ -22,6 +22,7 @@
 | 1.2 | 12 November 2026 | Change of device: detection and a new baseline period (sections 6.3, 10 and 12). Backup and restore, with checks on the file (section 5). Example profile reachable from the first screen. |
 | 1.3 | 12 November 2026 | Interface and accessibility (section 6.10). A report of difficulty seeing or tapping reaches the clinician view. Hosted prototype and repository added. 71 automated tests. |
 | 1.4 | 12 November 2026 | Simulation extended with a Kalman filter, baselines that keep adapting, and noise that lasts for weeks (sections 7.2, 8, 12 and 14). Offline only; the rule in the app is unchanged. 73 automated tests. |
+| 1.5 | 13 November 2026 | Hours slept the night before are asked before each session and stored with it (section 6.2). Recorded only; no rule uses them. |
 
 ---
 
@@ -206,6 +207,7 @@ Reaction time, symbol matching and picture memory are **primary indicators**. Go
 
 - Sessions 1–5 in the first two weeks (a measurement burst). Repeated brief assessments are more reliable than a single one [11], and practice effects are largest over the first sessions [19]. Session 1 is familiarisation and is never scored.
 - Sessions 2–5 form the baseline (n = 4). A session reported as an unusual day is not used and is replaced by the next.
+- Hours slept the night before (five bands, self-reported) are stored with each session so that the share of session-to-session noise explained by sleep can be estimated in the pilot. They do not mark a day as unusual and no rule uses them.
 - Then one session a month. After a yellow status the next session is due in 14 days.
 
 ### 6.3 Personal baseline and Reliable Change Index

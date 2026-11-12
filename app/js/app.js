@@ -203,11 +203,12 @@
   V.context = function () {
     var yn = [['0', t('btn.no')], ['1', t('btn.yes')]], qs = [
       { id: 'sleep', title: 'ctx.sleep', opts: [['poor', t('ctx.sleep.poor')], ['ok', t('ctx.sleep.ok')], ['good', t('ctx.sleep.good')]] },
+      { id: 'sleepH', title: 'ctx.sleepH', opts: ['lt5', '5', '6', '7', '8plus'].map(function (v) { return [v, t('ctx.sleepH.' + v)]; }) },   // recorded only; never changes the flag
       { id: 'unwell', title: 'ctx.unwell', opts: yn, compact: true },
       { id: 'mood', title: 'ctx.mood', opts: [['low', t('ctx.mood.low')], ['ok', t('ctx.mood.ok')], ['good', t('ctx.mood.good')]] },
       { id: 'med', title: 'ctx.med', opts: yn, compact: true }
     ], k = ui.contextStep, q = qs[k];
-    if (!q) return flow('ui.today', 'ui.today.x', 4, 4, '<h1 id="questionTitle" tabindex="-1">' + t('ui.ready') + '</h1><p class="question-hint">' + t('ui.ready.x') + '</p><p class="note">' + t('ctx.setup') + '</p>' + activityList() + '<button class="btn big primary" data-act="begin">' + t('btn.start') + ' <span aria-hidden="true">→</span></button>', flowBack('contextBack', k));
+    if (!q) return flow('ui.today', 'ui.today.x', qs.length, qs.length,'<h1 id="questionTitle" tabindex="-1">' + t('ui.ready') + '</h1><p class="question-hint">' + t('ui.ready.x') + '</p><p class="note">' + t('ctx.setup') + '</p>' + activityList() + '<button class="btn big primary" data-act="begin">' + t('btn.start') + ' <span aria-hidden="true">→</span></button>', flowBack('contextBack', k));
     return flow('ui.today', 'ui.today.x', k, qs.length, '<h1 id="questionTitle" tabindex="-1">' + t(q.title) + '</h1>' + choices(q, ui.ctx[q.id], 'contextAnswer') + '<p class="auto-hint">' + t('ui.answerHint') + '</p>', flowBack('contextBack', k));
   };
   function activityList() { return '<div class="activity-list">' + ['mem', 'rt', 'gng', 'sdmt'].map(function (k) { return '<div><span class="activity-icon">' + icon(k) + '</span>' + t('ui.' + k) + '</div>'; }).join('') + '</div>'; }
@@ -401,7 +402,7 @@
     var c = ui.ctx, seed = hash(d.code) + d.sessions.length * 7919 + 17;
     var sess = {
       id: 's' + NB.now().toString(36), startedAt: new Date(NB.now()).toISOString(), condition: condition, completed: false, seed: seed, app: C.version,
-      context: condition === 'standard' ? { sleep: c.sleep, unwell: c.unwell === '1', mood: c.mood, medChange: c.med === '1' } : null,
+      context: condition === 'standard' ? { sleep: c.sleep, sleepHours: c.sleepH, unwell: c.unwell === '1', mood: c.mood, medChange: c.med === '1' } : null,
       device: deviceNow()
     };
     sess.flagged = !!(sess.context && (sess.context.sleep === 'poor' || sess.context.unwell || sess.context.mood === 'low' || sess.context.medChange));
@@ -488,7 +489,7 @@
     accessUnable: function () { ui.accessReady = false; ui.ctx = {}; S.addEvent({ type: 'accessLimit' }); go('accessHelp'); },   // kept for the clinician
     rfSome: function () { S.addEvent({ type: 'redflag' }); go('emergency'); },
     ctx: function (el) { ui.ctx[el.dataset.k] = el.dataset.v; render(); },
-    begin: function () { if (['sleep', 'unwell', 'mood', 'med'].every(function (k) { return ui.ctx[k] != null; })) runSession('standard'); },
+    begin: function () { if (['sleep', 'sleepH', 'unwell', 'mood', 'med'].every(function (k) { return ui.ctx[k] != null; })) runSession('standard'); },
     riskView: function () { go(S.data.risk ? 'riskSum' : 'riskIntro'); },
     riskBegin: function () { if (!ui.riskAgree) return; ui.risk = {}; ui.riskStep = 0; go('riskForm'); },
     riskEdit: function () { ui.risk = JSON.parse(JSON.stringify(S.data.risk.answers)); ui.riskStep = 0; go('riskForm'); },

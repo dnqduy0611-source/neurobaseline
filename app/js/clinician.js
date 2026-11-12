@@ -165,7 +165,7 @@
     var lg = '<div class="scroll"><table class="data"><thead><tr><th>' + t('c.log.date') + '</th><th>' + t('c.log.role') + '</th>' + inds.map(function (i) { return '<th>' + t('ind.' + i.id) + '</th>'; }).join('') +
       '<th>' + t('c.log.ctx') + '</th><th>' + t('c.log.light') + '</th></tr></thead><tbody>';
     e.sessions.slice().reverse().slice(0, 40).forEach(function (a) {
-      var c = a.s.context || {}, tags = [c.sleep === 'poor' ? t('c.ctx.sleep') : '', c.unwell ? t('c.ctx.unwell') : '', c.mood === 'low' ? t('c.ctx.mood') : '', c.medChange ? t('c.ctx.med') : ''].filter(Boolean);
+      var c = a.s.context || {}, tags = [c.sleep === 'poor' ? t('c.ctx.sleep') : '', c.sleepHours ? t('c.ctx.h.' + c.sleepHours) : '', c.unwell ? t('c.ctx.unwell') : '', c.mood === 'low' ? t('c.ctx.mood') : '', c.medChange ? t('c.ctx.med') : ''].filter(Boolean);
       lg += '<tr><td class="nowrap">' + fmtDate(Date.parse(a.s.startedAt)) + '</td><td>' + t('c.role.' + a.role) + '</td>' + inds.map(function (i) {
         var x = a.ind[i.id]; return '<td class="num ' + (x && x.exceedsRed && i.primary ? 'bad' : x && x.exceeds && i.primary ? 'warn' : '') + '">' + fmtVal(i.id, a.s.measures[i.id]) + '</td>';
       }).join('') + '<td class="small">' + esc(tags.join(', ')) + '</td><td>' + (a.light ? '<span class="st ' + a.light + '"><i aria-hidden="true"></i>' + t('c.st.' + a.light) + '</span>' : '') + '</td></tr>';

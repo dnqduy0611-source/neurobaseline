@@ -22,7 +22,7 @@
         var c = s.context && typeof s.context === 'object' ? s.context : null;
         return { id: 's' + i, startedAt: isoOrNull(s.startedAt), condition: s.condition === 'nondominant' ? 'nondominant' : 'standard', completed: true, flagged: !!s.flagged, epoch: ep(s.epoch),
                  simulated: !!s.simulated, qa: !!s.qa,
-                 context: c ? { sleep: oneOf(c.sleep, ['poor', 'ok', 'good']), unwell: !!c.unwell, mood: oneOf(c.mood, ['low', 'ok', 'good']), medChange: !!c.medChange } : null,
+                 context: c ? { sleep: oneOf(c.sleep, ['poor', 'ok', 'good']), sleepHours: oneOf(c.sleepHours, ['lt5', '5', '6', '7', '8plus']), unwell: !!c.unwell, mood: oneOf(c.mood, ['low', 'ok', 'good']), medChange: !!c.medChange } : null,
                  measures: { rt: num(s.measures.rt), sdmt: num(s.measures.sdmt), mem: num(s.measures.mem), gng: num(s.measures.gng) } };
       });
     var p = d.profile && typeof d.profile === 'object' ? d.profile : {};

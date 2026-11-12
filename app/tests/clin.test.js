@@ -20,12 +20,12 @@ test('sanitize rejects anything that is not a NeuroBaseline export', function ()
 });
 test('sanitize keeps only expected fields and types', function () {
   var c = CL.sanitize(wrap({ code: 'NB-ABC12', profile: { ageBand: '<b>', edu: 3, hand: 'R', extra: 'x' }, events: [{ type: 'redflag', at: 'not a date' }, { type: 'quit', at: new Date(NOW).toISOString() }],
-    sessions: [{ completed: true, startedAt: new Date(NOW).toISOString(), measures: { rt: '350', sdmt: 46, mem: NaN, gng: 8 }, context: { sleep: '<script>', unwell: 1 }, note: '<script>' },
+    sessions: [{ completed: true, startedAt: new Date(NOW).toISOString(), measures: { rt: '350', sdmt: 46, mem: NaN, gng: 8 }, context: { sleep: '<script>', sleepHours: '12', unwell: 1 }, note: '<script>' },
                { completed: false, startedAt: new Date(NOW).toISOString(), measures: {} }, { completed: true, startedAt: 'bad', measures: {} }],
     risk: { answers: { htn: 'yes', dm: '<x>', height: '172', weight: 'abc', unknown: 'yes' } } }), RK.GROUPS);
   assert.strictEqual(c.data.sessions.length, 1);
   assert.deepStrictEqual(c.data.sessions[0].measures, { rt: null, sdmt: 46, mem: null, gng: 8 });
-  assert.deepStrictEqual(c.data.sessions[0].context, { sleep: null, unwell: true, mood: null, medChange: false });
+  assert.deepStrictEqual(c.data.sessions[0].context, { sleep: null, sleepHours: null, unwell: true, mood: null, medChange: false });
   assert.strictEqual(c.data.sessions[0].note, undefined);
   assert.deepStrictEqual(c.data.profile, { ageBand: null, edu: '3', hand: 'R' });
   assert.strictEqual(c.data.events.length, 0);
