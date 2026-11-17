@@ -7,7 +7,7 @@
 | Team | Braincore |
 | Team lead and contact | DO NGOC QUOC DUY, dnqduy.0611@gmail.com |
 | Members | DO NGOC QUOC DUY (individual entry, one member) |
-| Document version | 1.5, 13 November 2026 (see [revision history](#revision-history)) |
+| Document version | 1.7, 17 November 2026 (see [revision history](#revision-history)) |
 | Repository | https://github.com/dnqduy0611-source/neurobaseline |
 | Hosted prototype | https://dnqduy0611-source.github.io/neurobaseline/ |
 
@@ -23,6 +23,8 @@
 | 1.3 | 12 November 2026 | Interface and accessibility (section 6.10). A report of difficulty seeing or tapping reaches the clinician view. Hosted prototype and repository added. 71 automated tests. |
 | 1.4 | 12 November 2026 | Simulation extended with a Kalman filter, baselines that keep adapting, and noise that lasts for weeks (sections 7.2, 8, 12 and 14). Offline only; the rule in the app is unchanged. 73 automated tests. |
 | 1.5 | 13 November 2026 | Hours slept the night before are asked before each session and stored with it (section 6.2). Recorded only; no rule uses them. |
+| 1.6 | 17 November 2026 | Daily habits check-in (section 6.11): sleep, physical activity and social contact once a day, shown next to the session results, compared with the person's own earlier weeks and shared with the clinician by explicit choice. Recorded only; no rule uses them. The landing page shows the participant app and the clinician view running. 87 automated tests. |
+| 1.7 | 17 November 2026 | Insights and plan (section 6.12): one summary across session results, daily habits, risk profile and EEG, with a plan of at most three steps for the participant and the same summary in clinical wording for the clinician. Fixed rules; the status rule is unchanged. 100 automated tests. |
 
 ---
 
@@ -66,7 +68,7 @@
 - *Public EEG data (88 people).* The theta/alpha ratio alone separates Alzheimer's disease from healthy controls with AUC 0.87 (95 % CI 0.78–0.95). With only four channels at consumer-headband positions the AUC is 0.87–0.88. A machine-learning classifier did not improve on that single ratio.
 - *Simulation (10 000 simulated people per cohort, 36 months).* With every method tuned to the same false-referral rate of 5 %, a fixed cut-off wrongly refers stable people with low education four times as often as those with high education (8.9 % vs 2.1 %); personal-baseline methods refer all education groups equally. The rule built into the app finds 80 % of slow decliners within 24 months at a 5.8 % false-referral rate. A baseline that keeps adapting to new sessions absorbs the decline it should detect (29 % found against a fixed baseline, 4–15 % against adaptive ones).
 - *National survey data (NHANES 2011–2014, 3011 adults aged 60 and over).* On a standard symbol–digit test, college graduates score 2.2 SDs above people who did not finish 9th grade at the same age and sex. A single cut-off that flags 5 % of people with no memory complaint flags 40.2 % of the least schooled and 0.7 % of college graduates.
-- *Software.* 73 automated tests pass (61 for the app, 12 for the model).
+- *Software.* 100 automated tests pass (88 for the app, 12 for the model).
 
 **What it does not show.** No real person has been followed over time with this system. The EEG data are cross-sectional and from clinical electrodes. The simulation rests on assumed parameters. Section 12 lists the limits in full.
 
@@ -124,6 +126,8 @@ Everything described here was built during the challenge. Nothing existed before
 | Participant web app: onboarding, consent, four tasks, schedule, storage, export | Working | `app/index.html`, `app/js/` |
 | Personal baseline, Reliable Change Index, trend test, status rules | Working, unit-tested | `app/js/stats.js` |
 | Risk profile (Lancet 14 factors, LIBRA, PHQ-2) | Working, unit-tested | `app/js/risk.js` |
+| Daily habits check-in: sleep, physical activity, social contact; weekly statements; comparison with the person's own earlier weeks | Working, unit-tested | `app/js/habits.js`, `app/js/habits-ui.js` |
+| Insights and plan: one summary across session results, daily habits, risk profile and EEG; a plan of at most three steps; the same summary for the clinician | Working, unit-tested | `app/js/insight.js`, `app/js/insight-ui.js` |
 | Clinician view: priority list, summary, checklist, review record, safe file import | Working, unit-tested | `app/clinician.html`, `app/js/clin-core.js` |
 | Demo profile and simulated cohort | Working, labelled as simulated | `app/js/demo.js`, `app/js/demo-cohort.js` |
 | EEG signal processing and analysis on public data | Offline scripts, results reported | `eeg/` |
@@ -318,6 +322,38 @@ The interface outside the tasks follows the settings of the person's device. The
 
 Not done: no test with a screen reader on a phone (TalkBack, VoiceOver), none with the operating system's own text-size setting, and none with people who have low vision or tremor. The tasks cannot be taken without sight and hand control; the app says so and offers no alternative task.
 
+### 6.11 Daily habits check-in
+
+An optional check-in of four questions, once a day, about the night and the day before: hours slept (five bands), sleep quality (three levels), physical activity that raises the breathing rate (none, under 30 minutes, 30 minutes or more) and time spent with other people (yes or no). It takes about 30 seconds and days may be skipped.
+
+- **What the person sees.** A seven-day strip and three figures on the home screen; a page with a summary of the week, a 28-day chart, and a table of the habits in the seven days before each of the last four sessions.
+- **Weekly statements.** With four or more check-ins in the last seven days, the app states the mean sleep against the 7 hours or more advised for adults [21], the days with 30 minutes of activity against the WHO target of 150 minutes a week [22], and the days with social contact, which the Commission lists among the modifiable factors [3]. Each statement is a fixed sentence chosen by a rule; no model writes text.
+- **Compared with the person's own weeks.** The week before a session is compared with the 56 days before it. When a session is outside the usual range and sleep in that week was at least one hour below the person's own mean (three or more nights in the week, seven or more before it), the status card says so in one sentence and, at a red status, asks the person to include the habits in the file for the doctor.
+- **No effect on the status.** Daily habits never change the status, the baseline or the schedule. The sentence describes a coincidence in time; it does not claim that short sleep caused the change. The Commission states that the evidence on sleep does not yet support a recommendation for dementia prevention [3]; the 7-hour figure is general health advice.
+- **Clinician view.** If the person ticks the box when exporting, the detail page shows the last 28 days (check-ins, mean sleep, nights under 6 hours, active days, days with contact) and the week before the last session against earlier weeks. Short sleep in the check-ins marks the sleep item of the checklist.
+- **Data.** Entries stay on the device with the rest of the data and are left out of the exported file unless the person chooses to include them. A file is read through the same cleaning step as the app's own storage: known answers only, one entry per day.
+
+### 6.12 Insights and plan
+
+One page that reads the four sources together: session results, daily habits, the risk profile and the optional EEG check. It is produced by fixed rules in `app/js/insight.js`; no model writes or ranks text, and nothing on the page changes the status.
+
+- **Each source on its own.** One line and one level per source: needs attention, worth acting on, on track, in progress, or not added yet. A source that was not filled in is named as such and is never guessed.
+- **What the sources say together.** At most three statements, each naming the sources it rests on:
+
+| Statement | Rule |
+|---|---|
+| The change followed a week of less sleep | Yellow or red status, and sleep in the week before the session at least one hour below the person's own earlier weeks (or under 6 hours when there are no earlier weeks) |
+| The session was reported as an unusual day | Yellow or red status with a reported unusual day, when the sleep statement does not apply |
+| Session results and EEG both moved | Red status and the latest recording slower than the personal EEG range |
+| Risk profile and daily check-ins agree | The same habit is low in both: physical activity, social contact or sleep |
+| Stable results with room to act | Green status with a habit below the usual advice or a risk factor present |
+| Daily check-ins are missing | Yellow or red status with no check-ins |
+
+- **The plan.** At most three steps for the next two weeks, in this order: urgent care after red-flag symptoms; sharing the file with a doctor at a red status, or repeating the session at a yellow one; sleep; physical activity; social contact; the remaining risk factors that are present, each with the action of section 6.6; then the steps that complete the data (daily check-ins, the risk profile) and keeping the monthly session. A habit named by both the risk profile and the daily check-ins is marked as such. Each step states why it is there and which sources it rests on, and the page says how many further steps are waiting.
+- **When to see a doctor.** The page repeats the outcome of the status rule in words: urgent care, clinical review advised, repeat in two weeks, or no visit needed, and always lists the sudden symptoms that are an emergency.
+- **Clinician view.** The detail page opens with the same summary in clinical wording: the four sources in one table and the statements across sources. Sources the participant did not share are marked "not shared".
+- **What it does not do.** It does not estimate a risk of dementia, it does not weigh the sources into a score, and it does not infer a cause. The sleep statement describes the order of events.
+
 ---
 
 ## 7. Evidence
@@ -432,6 +468,8 @@ A QA robot (`index.html?qa=1`) plays complete sessions automatically. It was use
 
 **Safety before analysis.** Four red-flag questions precede every session. Any "yes" stops the session, advises urgent care, and is shown first in the clinician's list.
 
+**No generated text.** The weekly statements on daily habits and the page of insights and plan (sections 6.11 and 6.12) are fixed sentences chosen by rules that are listed in this document and covered by unit tests. Each step of the plan shows the reason and the sources behind it.
+
 **Explainable by design.** Every flag is produced by two named statistics and shows its reason: the indicator, the value, the person's usual level and the limit, or the areas that carry a trend. Machine learning was tested where it could help (EEG classification) and left out of the decision path when it did not outperform a single interpretable ratio.
 
 **Learning from personal data, with a fixed point of comparison.** The system learns each person's usual level and variability from their own sessions. It does not let that baseline drift with every new session: in simulation a baseline that keeps adapting found 4–15 % of slow decliners where a fixed one found 29 % (section 7.2). More flexible models are compared offline first, and none enters the status rule without data from real people.
@@ -449,7 +487,7 @@ A QA robot (`index.html?qa=1`) plays complete sessions automatically. It was use
 | Pseudonymity | A random code generated on the device |
 | Local processing | All computation and storage in the browser; nothing transmitted |
 | EEG | Analysed on the device; only derived numbers are kept, never the signal |
-| User-controlled sharing | The participant exports a file and chooses the recipient; the risk profile and the EEG results are each excluded unless a box is ticked |
+| User-controlled sharing | The participant exports a file and chooses the recipient; the risk profile, the daily habits and the EEG results are each excluded unless a box is ticked |
 | Erasure | "Delete all my data" removes everything from the device |
 
 **Cultural considerations.** Tasks avoid words. Alcohol is asked with "None" as the first option and may be left blank. The app never advises anyone to drink, although LIBRA counts low-to-moderate alcohol use as protective. Picture sets avoid alcohol, pork and religious symbols. Family history is optional, and genetic results are not collected.
@@ -495,6 +533,9 @@ No data were collected from people during the challenge. The organisers provided
 | Practice effect negligible after session 5 | – | App (no correction) | Practice curve from pilot; correction as in `sim/model.py` |
 | Simulation parameters (reliability 0.70 / 0.85 / 0.60; decline 0.5 SD per year; 8 % unusual days) | See `sim/README.md` | Simulation study | Literature review and pilot |
 | Social isolation means contact less than weekly | – | Risk profile | Agreed definition |
+| Hours counted for a sleep band | Under 5 h as 4.5 h; 8 h or more as 8 h | Daily habits, mean sleep | Hours entered as a number, or a wearable |
+| Check-ins needed before a week is summarised | 4 of 7 days | Daily habits, weekly statements | Review after pilot |
+| Sleep clearly below the person's usual | 1 h or more below the mean of the previous 56 days | Daily habits, sentence on the status card | Within-person variation measured in the pilot |
 | Excessive alcohol means more than 12 drinks a week | Lancet: more than 21 UK units | Risk profile | – |
 | Headband electrodes sit at the nearest 10–20 positions | AF7 and AF8 from Fp and F7/F8; TP9 and TP10 as T5 and T6; Fpz as the mean of Fp1 and Fp2 | EEG analysis | Real device recordings |
 | One device per participant | The app compares operating system, screen size and input type with the sessions of the current baseline; on a change the participant goes back to the usual device or starts a new baseline | All timing measures | Device calibration; devices of the same model cannot be told apart |
@@ -554,6 +595,8 @@ No data were collected from people during the challenge. The organisers provided
 15. English and Vietnamese only. The Vietnamese PHQ-2 wording is the team's own translation. No Arabic, no audio instructions.
 16. Not tested across phones, with older adults, with a screen reader, or with people who have sensory or motor impairment.
 17. Not a certified medical device. No regulatory assessment has been made.
+18. Daily habits are single self-report questions answered once a day, in bands. They are not actigraphy or a validated sleep or activity questionnaire, days can be missed, and the comparison with session results is descriptive.
+19. The insights and plan are rules written by the team from general guidance. They have not been reviewed by a clinical panel or tested with users, and the order of the steps is a judgement, not a measured benefit.
 
 ---
 
@@ -592,7 +635,7 @@ Sample sizes for stages 1 and 2 will be set from the reliability and within-pers
 
 ## 15. How to review the prototype
 
-The prototype is hosted at https://dnqduy0611-source.github.io/neurobaseline/ . The page links to the example profile, the participant app and the clinician view; nothing needs to be installed and there is no login.
+The prototype is hosted at https://dnqduy0611-source.github.io/neurobaseline/ . The page shows the participant app and the clinician view running with simulated data and links to both; nothing needs to be installed and there is no login.
 
 To run it locally instead, serve the `app/` folder and open it in a browser:
 
@@ -605,7 +648,9 @@ python -m http.server 8080
 |---|---|
 | The participant app from the start | `http://localhost:8080/` |
 | Ten months of simulated history ending in a red status | `http://localhost:8080/index.html?demo=1` |
-| The clinician view | `http://localhost:8080/clinician.html`, then "Load simulated cohort" |
+| The clinician view | `http://localhost:8080/clinician.html?demo=1` (opens with the simulated cohort) |
+| Insights and plan | In the example profile: "See my summary and plan" on the home screen |
+| The daily habits check-in | In the example profile: "Habits" in the bottom bar, or "Check in for today" on the home screen |
 | The EEG check on real recordings | In the participant app: "Brain-rhythm check", then a sample recording or the simulated headband |
 | A complete session played automatically (shortened) | `http://localhost:8080/index.html?qa=1&fast=1` |
 
@@ -618,6 +663,8 @@ node tests/risk.test.js
 node tests/clin.test.js
 node tests/eeg.test.js
 node tests/backup.test.js
+node tests/habits.test.js
+node tests/insight.test.js
 ```
 
 ```bash
@@ -653,3 +700,5 @@ All entries were checked against Crossref, PubMed or the publisher's page.
 18. Ngandu T, Lehtisalo J, Solomon A, et al. A 2 year multidomain intervention of diet, exercise, cognitive training, and vascular risk monitoring versus control to prevent cognitive decline in at-risk elderly people (FINGER): a randomised controlled trial. *Lancet.* 2015;385(9984):2255–2263. doi:10.1016/S0140-6736(15)60461-5
 19. Falleti MG, Maruff P, Collie A, Darby DG. Practice effects associated with the repeated assessment of cognitive function using the CogState battery at 10-minute, one week and one month test-retest intervals. *J Clin Exp Neuropsychol.* 2006;28(7):1095–1112. doi:10.1080/13803390500205718
 20. Centers for Disease Control and Prevention, National Center for Health Statistics. National Health and Nutrition Examination Survey data, 2011–2012 and 2013–2014. Hyattsville, MD: US Department of Health and Human Services. https://wwwn.cdc.gov/nchs/nhanes/
+21. Watson NF, Badr MS, Belenky G, et al. Recommended amount of sleep for a healthy adult: a joint consensus statement of the American Academy of Sleep Medicine and Sleep Research Society. *Sleep.* 2015;38(6):843–844. doi:10.5665/sleep.4716
+22. Bull FC, Al-Ansari SS, Biddle S, et al. World Health Organization 2020 guidelines on physical activity and sedentary behaviour. *Br J Sports Med.* 2020;54(24):1451–1462. doi:10.1136/bjsports-2020-102955

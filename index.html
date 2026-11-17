@@ -3,55 +3,281 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#f5f7ff">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f5f7ff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
 <meta name="robots" content="noindex">
+<meta name="description" content="NeuroBaseline: five-minute cognitive sessions on a phone, a personal baseline, a 30-second daily habits check-in, a risk profile, an optional EEG check and a clinician workspace. Research prototype; makes no diagnosis.">
 <title>NeuroBaseline</title>
 <style>
-:root{--ink:#222b45;--mut:#6c7490;--line:#e5e9f6;--bg:#f5f7ff;--brand:#2449e8}
+:root{--ink:#222b45;--mut:#5a6282;--line:#e5e9f6;--bg:#f5f7ff;--card:#fff;--brand:#2449e8;--brand-ink:#2449e8;--soft:#edf1ff;--red:#ba4039;--red-soft:#fdf1f0;--green:#23804f;--yellow:#a66312;--frame:#10142a;--shadow:0 18px 50px #2449e824}
+@media (prefers-color-scheme:dark){:root{--ink:#fff;--mut:#dcdce1;--line:#2c2c2e;--bg:#000;--card:#1c1c1e;--brand-ink:#9db0ff;--soft:#1c2550;--red:#ff8f87;--red-soft:#2a1715;--green:#6fd39b;--yellow:#f0b660;--frame:#3a3a3c;--shadow:none}}
 *{box-sizing:border-box}
+html{scroll-behavior:smooth}
 html,body{margin:0}
 body{font:17px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:var(--bg)}
-main{max-width:860px;margin:0 auto;padding:40px 22px 56px}
-.brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:650;letter-spacing:-.5px}
+a{color:var(--brand-ink);text-underline-offset:4px}
+:focus-visible{outline:3px solid #5777f3;outline-offset:2px;border-radius:6px}
+.wrap{max-width:1140px;margin:0 auto;padding:0 22px}
+
+/* header */
+.site{display:flex;align-items:center;gap:18px;padding:20px 0}
+.brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:650;letter-spacing:-.5px;color:var(--ink);text-decoration:none}
 .mark{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:12px;background:var(--brand);color:#fff;font-size:24px;line-height:1}
-h1{font-size:38px;line-height:1.15;letter-spacing:-1.2px;font-weight:600;margin:34px 0 14px;max-width:680px}
-.lead{font-size:19px;color:var(--mut);max-width:640px;margin:0 0 26px}
-.note{background:#fff;border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:12px;padding:14px 16px;margin:0 0 30px;font-size:15.5px}
-h2{font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin:34px 0 12px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
-a.card{display:block;background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;color:inherit;text-decoration:none;transition:border-color .16s}
-a.card:hover,a.card:focus-visible{border-color:var(--brand)}
-a.card b{display:block;font-size:18px;margin-bottom:4px}
-a.card span{color:var(--mut);font-size:15px}
-a.card.primary{background:var(--brand);border-color:var(--brand);color:#fff}
-a.card.primary span{color:#dbe2ff}
-ul.docs{list-style:none;margin:0;padding:0;background:#fff;border:1px solid var(--line);border-radius:16px}
+.site nav{display:flex;gap:22px;margin-left:auto;font-size:15.5px}
+.site nav a{color:var(--mut);text-decoration:none}
+.site nav a:hover{color:var(--ink)}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 410px;gap:56px;align-items:center;padding:26px 0 64px}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--mut);margin:0 0 14px}
+h1{font-size:46px;line-height:1.1;letter-spacing:-1.6px;font-weight:600;margin:0 0 18px}
+.lead{font-size:19.5px;color:var(--mut);max-width:560px;margin:0 0 26px}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 22px}
+.btn{display:inline-flex;align-items:center;gap:8px;min-height:52px;padding:12px 22px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font-weight:600;text-decoration:none;transition:border-color .16s}
+.btn:hover{border-color:var(--brand)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+.note{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--brand);border-radius:12px;padding:13px 16px;font-size:15px;max-width:560px;margin:0}
+.facts{display:flex;flex-wrap:wrap;gap:8px 10px;list-style:none;margin:22px 0 0;padding:0;font-size:14.5px;color:var(--mut)}
+.facts li{border:1px solid var(--line);border-radius:99px;padding:5px 12px;background:var(--card)}
+
+/* live frames */
+.live-tag{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--mut);margin:0 0 12px}
+.live-tag i{width:9px;height:9px;border-radius:50%;background:#2fae6b;box-shadow:0 0 0 4px #2fae6b33}
+.phone{border:10px solid var(--frame);border-radius:46px;background:var(--frame);box-shadow:var(--shadow);overflow:hidden}
+.phone iframe{display:block;width:100%;height:740px;border:0;border-radius:36px;background:var(--bg)}
+.browser{border:1px solid var(--line);border-radius:18px;background:var(--card);box-shadow:var(--shadow);overflow:hidden}
+.browser .bar{display:flex;align-items:center;gap:7px;padding:11px 16px;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--mut)}
+.browser .bar i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.browser .bar span{margin-left:10px}
+.browser iframe{display:block;width:100%;height:680px;border:0;background:var(--bg)}
+.cap{font-size:14px;color:var(--mut);margin:12px 0 0}
+
+/* static previews, shown where the live frames are not */
+.only-small{display:none}
+.shot{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px}
+.shot .sim{display:inline-block;font-size:12px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--mut);border:1px solid var(--line);border-radius:99px;padding:3px 10px;margin:0 0 12px}
+.shot h3{display:flex;align-items:center;gap:10px;font-size:19px;margin:0 0 8px}
+.shot h3 b{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--red);color:var(--red);font-size:16px}
+.shot p{margin:0 0 10px;font-size:15.5px}
+.shot ul{margin:0 0 12px;padding-left:20px;font-size:15px}
+.shot svg{display:block;width:100%;height:auto}
+.rows{list-style:none;margin:12px 0 0;padding:0;font-size:15px}
+.rows li{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.rows li span{color:var(--mut);text-align:right}
+.nums{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center;font-size:12.5px;color:var(--mut)}
+.nums b{display:block;font-size:24px;color:var(--ink)}
+
+/* sections */
+section{padding:56px 0;border-top:1px solid var(--line)}
+h2{font-size:32px;line-height:1.18;letter-spacing:-.9px;font-weight:600;margin:0 0 12px;max-width:720px}
+.sub{color:var(--mut);max-width:680px;margin:0 0 30px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.card h3{font-size:18px;margin:0 0 6px;letter-spacing:-.2px}
+.card p{margin:0;color:var(--mut);font-size:15.5px}
+.card .n{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:11px;background:var(--soft);color:var(--brand-ink);font-weight:650;font-size:15px;margin:0 0 14px}
+.steps{counter-reset:s;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;list-style:none;margin:0;padding:0}
+.steps li{counter-increment:s;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px}
+.steps li::before{content:counter(s);display:block;font-size:34px;font-weight:600;letter-spacing:-1px;color:var(--brand-ink);margin:0 0 6px}
+.steps b{display:block;font-size:18px;margin:0 0 6px}
+.steps span{color:var(--mut);font-size:15.5px}
+.status{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 0;padding:0;list-style:none;font-size:15px}
+.status li{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:7px 14px}
+.status i{width:10px;height:10px;border-radius:50%}
+.stat b{display:block;font-size:44px;line-height:1.05;letter-spacing:-1.6px;font-weight:600;color:var(--brand-ink);margin:0 0 10px}
+.stat b small{font-size:20px;letter-spacing:0;color:var(--mut);font-weight:500}
+.stat a{display:inline-block;margin-top:12px;font-size:15px;font-weight:600;text-decoration:none}
+.stat a:hover{text-decoration:underline}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.list{margin:0;padding-left:20px;color:var(--mut);font-size:15.5px}
+.list li{margin:0 0 8px}
+.list b{color:var(--ink)}
+ul.docs{list-style:none;margin:0;padding:0;background:var(--card);border:1px solid var(--line);border-radius:18px}
 ul.docs li{padding:14px 20px;border-top:1px solid var(--line)}
 ul.docs li:first-child{border-top:0}
-ul.docs a{color:var(--brand);font-weight:600;text-decoration:none}
+ul.docs a{font-weight:600;text-decoration:none}
 ul.docs a:hover{text-decoration:underline}
 ul.docs span{display:block;color:var(--mut);font-size:15px}
-footer{margin-top:40px;color:var(--mut);font-size:14px}
-:focus-visible{outline:3px solid #5777f3;outline-offset:2px}
-@media (max-width:560px){h1{font-size:30px}main{padding-top:28px}}
-@media (prefers-reduced-motion:reduce){a.card{transition:none}}
+footer{padding:28px 0 48px;border-top:1px solid var(--line);color:var(--mut);font-size:14px}
+
+@media (max-width:980px){
+  .hero{grid-template-columns:1fr;gap:34px;padding-bottom:48px}
+  .only-wide{display:none}
+  .only-small{display:block}
+  .grid,.steps{grid-template-columns:1fr 1fr}
+  h1{font-size:38px}
+}
+@media (max-width:640px){
+  .wrap{padding:0 18px}
+  .site nav{display:none}
+  h1{font-size:31px;letter-spacing:-1px}
+  h2{font-size:25px}
+  .lead{font-size:18px}
+  .grid,.steps,.two{grid-template-columns:1fr}
+  .btn{width:100%;justify-content:center}
+  section{padding:42px 0}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.btn{transition:none}}
 </style>
 </head>
 <body>
-<main>
-  <div class="brand"><span class="mark" aria-hidden="true">n</span>NeuroBaseline</div>
-  <h1>Protecting brain health earlier by comparing each person with themselves.</h1>
-  <p class="lead">Short cognitive tasks on a phone, a personal baseline, and a clear rule for when a change deserves a clinician's attention.</p>
-  <p class="note"><b>Research prototype.</b> NeuroBaseline is a screening and monitoring tool. It makes no diagnosis and is not a medical device. The example profile and the clinician's cohort are simulated; no real person's data are shown.</p>
+<div class="wrap">
 
-  <h2>Try it</h2>
-  <div class="grid">
-    <a class="card primary" href="app/index.html?demo=1"><b>See an example profile</b><span>Ten months of simulated history for one fictional person, ending in a confirmed change.</span></a>
-    <a class="card" href="app/index.html"><b>Start as a participant</b><span>Four short tasks, about five minutes. Best on a phone. Results stay on your device.</span></a>
-    <a class="card" href="app/clinician.html"><b>Open the clinician view</b><span>Priority list, per-person summary and review record, with a simulated cohort.</span></a>
+<header class="site">
+  <a class="brand" href="./"><span class="mark" aria-hidden="true">n</span>NeuroBaseline</a>
+  <nav aria-label="Sections">
+    <a href="#inside">What is inside</a>
+    <a href="#clinician">For clinicians</a>
+    <a href="#evidence">Evidence</a>
+    <a href="#safeguards">Safeguards</a>
+    <a href="#read">Documents</a>
+  </nav>
+</header>
+
+<main>
+<div class="hero">
+  <div>
+    <p class="eyebrow">Challenge 08 · Protecting Brain Health Earlier</p>
+    <h1>Protecting brain health earlier by comparing each person with themselves.</h1>
+    <p class="lead">Five minutes of cognitive tasks on a phone, a personal baseline, a 30-second daily habits check-in, a plan the person can act on, and a clear rule for when a change deserves a clinician's attention.</p>
+    <div class="cta">
+      <a class="btn primary" href="app/index.html?demo=1">Open the example profile <span aria-hidden="true">→</span></a>
+      <a class="btn" href="app/index.html">Take the 5-minute session</a>
+      <a class="btn" href="app/clinician.html?demo=1">Clinician view</a>
+    </div>
+    <p class="note"><b>Research prototype.</b> NeuroBaseline is a screening and monitoring tool. It makes no diagnosis and is not a medical device. The example profile and the clinician's cohort are simulated; no real person's data are shown.</p>
+    <ul class="facts" aria-label="At a glance">
+      <li>No account, no server</li>
+      <li>English and Vietnamese</li>
+      <li>Light and dark themes</li>
+      <li>100 automated tests</li>
+    </ul>
   </div>
 
-  <h2>Read</h2>
+  <div class="only-wide">
+    <p class="live-tag"><i aria-hidden="true"></i>Live app · simulated profile · tap around</p>
+    <div class="phone">
+      <iframe data-src="app/index.html?demo=1" title="NeuroBaseline participant app showing a simulated example profile"></iframe>
+    </div>
+    <p class="cap">This is the app itself, running in your browser. Ten months of simulated history for one fictional person, ending in a confirmed change.</p>
+  </div>
+
+  <div class="only-small shot">
+    <span class="sim">Example profile · simulated</span>
+    <h3><b aria-hidden="true">!</b>Clinical review advised</h3>
+    <p>A change from your usual level was confirmed. This is not a diagnosis. Please share your summary with a doctor, who decides what to do next.</p>
+    <ul>
+      <li>Reaction time: 404 ms (your usual level 350 ms, limit 385 ms)</li>
+      <li>Symbol matching: 37 (your usual level 46.5, limit 40.8)</li>
+      <li>Still outside your usual range on the repeat session.</li>
+      <li>In the week before, about 5.1 hours of sleep a night: 1.4 hours less than this person's usual.</li>
+    </ul>
+    <svg viewBox="0 0 320 120" role="img" aria-label="Reaction time over ten months: thirteen sessions inside the person's usual range, then two sessions above it.">
+      <rect x="0" y="39.2" width="320" height="58.3" rx="6" fill="#2449e8" opacity=".12"/>
+      <line x1="0" y1="68.3" x2="320" y2="68.3" stroke="#2449e8" stroke-width="1" stroke-dasharray="4 4" opacity=".7"/>
+      <polyline fill="none" stroke="currentColor" stroke-width="1.6" opacity=".55" points="10,50 31.4,63.3 52.8,70.8 74.2,66.7 95.6,72.5 117,70 138.4,62.5 159.8,73.3 181.2,65.8 202.6,59.2 224,69.2 245.4,61.7 266.8,55 288.2,18.3 309.6,23.3"/>
+      <g fill="#2449e8"><circle cx="10" cy="50" r="3.2"/><circle cx="31.4" cy="63.3" r="3.2"/><circle cx="52.8" cy="70.8" r="3.2"/><circle cx="74.2" cy="66.7" r="3.2"/><circle cx="95.6" cy="72.5" r="3.2"/><circle cx="117" cy="70" r="3.2"/><circle cx="138.4" cy="62.5" r="3.2"/><circle cx="159.8" cy="73.3" r="3.2"/><circle cx="181.2" cy="65.8" r="3.2"/><circle cx="202.6" cy="59.2" r="3.2"/><circle cx="224" cy="69.2" r="3.2"/><circle cx="245.4" cy="61.7" r="3.2"/><circle cx="266.8" cy="55" r="3.2"/></g>
+      <g fill="#d2524a"><circle cx="288.2" cy="18.3" r="4.2"/><circle cx="309.6" cy="23.3" r="4.2"/></g>
+    </svg>
+    <p class="cap">Reaction time, 15 sessions. The band is this person's own usual range.</p>
+  </div>
+</div>
+
+<section id="inside">
+  <p class="eyebrow">What is inside</p>
+  <h2>One companion for the person, one workspace for the clinician.</h2>
+  <p class="sub">Everything below is built and running in this prototype.</p>
+  <div class="grid">
+    <div class="card"><span class="n">01</span><h3>Four short cognitive tasks</h3><p>Reaction time, tap-and-stop (Go/No-Go), symbol matching and picture memory. About five minutes on a phone, with practice trials and a check for difficulty seeing or tapping.</p></div>
+    <div class="card"><span class="n">02</span><h3>A personal baseline</h3><p>Five sessions in two weeks record the person's usual level. After that, one session a month is compared with that level using a Reliable Change Index and a trend test. Every status lists which measure moved and against which limit.</p></div>
+    <div class="card"><span class="n">03</span><h3>Daily habits check-in</h3><p>Four questions a day on sleep, movement and time with others, about 30 seconds. A four-week chart sits next to the session results, and each week is compared with the person's own earlier weeks.</p></div>
+    <div class="card"><span class="n">04</span><h3>Risk profile</h3><p>An optional profile built on the 14 modifiable risk factors of the 2024 Lancet Commission, such as hearing, blood pressure, physical activity and social contact. Each factor present comes with one thing to act on.</p></div>
+    <div class="card"><span class="n">05</span><h3>Optional brain-rhythm check</h3><p>A resting EEG recording from a consumer headband is processed in the browser. The theta/alpha ratio and alpha frequency are compared with the person's own earlier recordings.</p></div>
+    <div class="card"><span class="n">06</span><h3>Insights and a plan</h3><p>One page reads session results, daily habits, the risk profile and the EEG check together, says how they fit, and gives at most three steps for the next two weeks. Every line comes from a fixed rule and states why it is there.</p></div>
+  </div>
+</section>
+
+<section id="how">
+  <p class="eyebrow">How it works</p>
+  <h2>From a first session to a decision a clinician can check.</h2>
+  <ol class="steps">
+    <li><b>Record the usual level</b><span>Five sessions over two weeks. The first is a warm-up; the next four set the personal baseline for each task.</span></li>
+    <li><b>Check in once a month</b><span>The same five minutes, on the same phone. Each session is compared with the person's own baseline, never with a population cut-off.</span></li>
+    <li><b>Act on a confirmed change</b><span>A single unusual result asks for a repeat in two weeks. Only a change that holds, or a steady downward trend, advises clinical review.</span></li>
+  </ol>
+  <ul class="status" aria-label="The three statuses">
+    <li><i style="background:#2fae6b" aria-hidden="true"></i>Within your usual range</li>
+    <li><i style="background:#d9942b" aria-hidden="true"></i>Repeat in two weeks</li>
+    <li><i style="background:#d2524a" aria-hidden="true"></i>Clinical review advised</li>
+  </ul>
+</section>
+
+<section id="clinician">
+  <p class="eyebrow">For clinicians</p>
+  <h2>Who to see first, why they were flagged, and what to rule out.</h2>
+  <p class="sub">A priority list, a summary across sources for each person, the results against the baseline, the daily habits the person chose to share, a checklist of 12 reversible contributors prompted by the person's own answers, and a review record. Files are imported by hand; nothing is uploaded.</p>
+
+  <div class="only-wide">
+    <p class="live-tag"><i aria-hidden="true"></i>Live clinician view · simulated cohort of nine · open any row</p>
+    <div class="browser">
+      <div class="bar"><i aria-hidden="true"></i><i aria-hidden="true"></i><i aria-hidden="true"></i><span>NeuroBaseline · clinical workspace</span></div>
+      <iframe data-src="app/clinician.html?demo=1" title="NeuroBaseline clinician view showing a simulated cohort"></iframe>
+    </div>
+  </div>
+
+  <div class="only-small shot">
+    <span class="sim">Simulated cohort</span>
+    <div class="nums"><div><b>9</b>participants</div><div><b>4</b>need review</div><div><b>2</b>repeat requested</div><div><b>1</b>overdue</div></div>
+    <ul class="rows">
+      <li><b>DEMO-G13</b><span>Red-flag symptoms reported</span></li>
+      <li><b>DEMO-RASHID</b><span>Referral threshold reached: beyond the limit on two consecutive sessions</span></li>
+      <li><b>DEMO-A04</b><span>Referral threshold reached: downward trend</span></li>
+      <li><b>DEMO-B11</b><span>Repeat session requested</span></li>
+    </ul>
+    <p class="cap"><a href="app/clinician.html?demo=1">Open the clinician view</a></p>
+  </div>
+</section>
+
+<section id="evidence">
+  <p class="eyebrow">Evidence</p>
+  <h2>Why a personal baseline, in three numbers.</h2>
+  <p class="sub">All three analyses are in the repository with their code, and can be rerun.</p>
+  <div class="grid">
+    <div class="card stat"><b>40% <small>vs 0.7%</small></b><p>One fixed cut-off that flags 5% of people with no memory complaint flags 40% of those who did not finish 9th grade and 0.7% of college graduates. NHANES 2011–2014, 3,011 adults aged 60 and over.</p><a data-doc href="nhanes/REPORT.md">Fixed cut-offs and schooling →</a></div>
+    <div class="card stat"><b>76% <small>vs 10%</small></b><p>At the same 5% of false referrals over three years, a trend test on the personal baseline finds 76% of slowly declining people within 24 months; a fixed cut-off finds 10%. The rule in the app finds 80% at 5.8%. Simulated data.</p><a data-doc href="sim/REPORT.md">Simulation study →</a></div>
+    <div class="card stat"><b>0.87 <small>AUC</small></b><p>The theta/alpha ratio of resting EEG separates Alzheimer's disease from healthy controls in a public dataset of 88 people, and keeps 0.87–0.88 when reduced to headband electrode positions.</p><a data-doc href="eeg/REPORT.md">EEG analysis →</a></div>
+  </div>
+</section>
+
+<section id="safeguards">
+  <p class="eyebrow">Safeguards and limits</p>
+  <h2>Careful about what it says, and about what it does not know yet.</h2>
+  <div class="two">
+    <div class="card">
+      <h3>Safeguards</h3>
+      <ul class="list">
+        <li><b>No diagnosis.</b> The app reports a change from a person's own level. A clinician decides what it means.</li>
+        <li><b>Data stay on the device.</b> No account and no server. Health answers, daily habits and EEG results leave the phone only when the person ticks the box and exports a file.</li>
+        <li><b>A clear referral path.</b> Red-flag symptoms lead straight to urgent-care advice; a confirmed change leads to a summary for a doctor.</li>
+        <li><b>Explained, not scored.</b> Every flag and every step of the plan states its reason. Fixed rules choose the words; no AI model writes them.</li>
+        <li><b>Simulated data are labelled</b> wherever they appear.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Limits</h3>
+      <ul class="list">
+        <li><b>No data from real participants yet.</b> Thresholds come from simulation and published values and are marked as assumptions in the code.</li>
+        <li><b>Self-report</b> with single questions stands in for the instruments used in the risk-factor studies. Daily habits are recorded and shown; they never change the status.</li>
+        <li><b>No headband connection.</b> EEG is read from a recording file; no device has been tested.</li>
+        <li><b>Not a medical device.</b> A pilot with volunteers and clinical validation come before any use in care.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="read">
+  <p class="eyebrow">Documents</p>
+  <h2>Read the detail.</h2>
   <ul class="docs">
     <li><a data-doc href="docs/TECHNICAL_DOCUMENTATION.md">Technical documentation</a><span>Solution, methods, evidence, responsible AI, assumptions, dependencies and limitations.</span></li>
     <li><a data-doc href="sim/REPORT.md">Simulation study</a><span>Six ways of raising a referral, compared at the same false-referral rate.</span></li>
@@ -59,10 +285,22 @@ footer{margin-top:40px;color:var(--mut);font-size:14px}
     <li><a data-doc href="nhanes/REPORT.md">Fixed cut-offs and schooling</a><span>What one cut-off for everyone does in a national survey of 3011 adults aged 60 and over.</span></li>
     <li><a data-doc href="README.md">Developer guide</a><span>How the repository is organised and how to run the tests.</span></li>
   </ul>
-
-  <footer>Future Health Digital Innovation Challenge · Challenge 08, Protecting Brain Health Earlier</footer>
+</section>
 </main>
+
+<footer>Future Health Digital Innovation Challenge · Challenge 08, Protecting Brain Health Earlier · Team Braincore</footer>
+</div>
 <script>
+// The live frames load on wide screens only; narrow screens show the static previews instead.
+(function () {
+  var wide = window.matchMedia('(min-width: 981px)');
+  function load() {
+    if (!wide.matches) return;
+    document.querySelectorAll('iframe[data-src]').forEach(function (f) { f.src = f.getAttribute('data-src'); f.removeAttribute('data-src'); });
+  }
+  load();
+  if (wide.addEventListener) wide.addEventListener('change', load);
+})();
 // On GitHub Pages, point the documents at the repository so that tables and diagrams are rendered.
 (function () {
   var m = /^([^.]+)[.]github[.]io$/.exec(location.hostname), repo = location.pathname.split('/')[1];

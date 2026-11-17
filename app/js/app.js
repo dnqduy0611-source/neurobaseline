@@ -4,7 +4,7 @@
   var NB = window.NB, C = NB.config, I = NB.i18n, S = NB.store, ST = NB.stats, T = NB.tests;
   function t(k, v) { return I.t(k, v); }
   var RK = NB.risk;
-  var ui = { screen: 'home', ind: 'rt', ctx: {}, prof: {}, lastId: null, agree: false, running: false, risk: {}, riskStep: 0, riskAgree: false, expRisk: false, expEeg: false };
+  var ui = { screen: 'home', ind: 'rt', ctx: {}, prof: {}, lastId: null, agree: false, running: false, risk: {}, riskStep: 0, riskAgree: false, expRisk: false, expEeg: false, expHabits: false };
   ui.profileStep = 0; ui.contextStep = 0;
   var advanceTimer = null, advancing = false, pendingAnswerNext = null;
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -33,6 +33,8 @@
       sdmt: '<rect x="3" y="3" width="7" height="7" rx="2"/><circle cx="17" cy="7" r="4"/><path d="m6.5 14 4 7h-8Z"/><path d="M14 17h7m-3.5-3.5v7"/>',
       health: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/>',
       eeg: '<path d="M3 12h3l2-6 3 12 3-9 2 3h5"/>',
+      habits: '<rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16M9 15l2 2 4-4"/>',
+      plan: '<rect x="5" y="4" width="14" height="17" rx="3"/><path d="M9 9h6M9 13h6M9 17h3"/>',
       lang: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
       file: '<path d="M12 3v12m0 0-4-4m4 4 4-4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/>',
       shield: '<path d="M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6Z"/><path d="m9 12 2 2 4-4"/>',
@@ -43,12 +45,12 @@
   }
   function waveArt() { return '<svg class="wave-art" viewBox="0 0 400 300" fill="none" aria-hidden="true"><path d="M-30 180C75 80 125 265 240 160S390 125 450 130V330H-30Z" fill="#aabaff"/><path d="M-30 215C75 115 125 300 240 195S390 160 450 165V330H-30Z" fill="#718eff"/><path d="M-30 250C75 150 125 335 240 230S390 195 450 200V330H-30Z" fill="#4168fc"/></svg>'; }
   function bottomNav() {
-    return '<nav class="app-nav" aria-label="' + t('ui.navigation') + '">' + [['home', 'ui.home'], ['history', 'home.history'], ['settings', 'home.settings']].map(function (item) {
+    return '<nav class="app-nav" aria-label="' + t('ui.navigation') + '">' + [['home', 'ui.home']].concat(NB.habitsUi ? [['habits', 'hb.nav']] : [], [['history', 'home.history'], ['settings', 'home.settings']]).map(function (item) {
       return '<button data-act="go" data-v="' + item[0] + '"' + (ui.screen === item[0] ? ' class="active" aria-current="page"' : '') + '>' + icon(item[0]) + '<span>' + t(item[1]) + '</span></button>';
     }).join('') + '</nav>';
   }
   function head() {
-    return '<header class="top"><a class="brand" href="index.html" aria-label="NeuroBaseline"><span class="brand-mark" aria-hidden="true">n<span>·</span></span>NeuroBaseline</a><button class="language" data-act="lang2" data-v="' + (I.lang === 'vi' ? 'en' : 'vi') + '">' + t('ui.lang') + '</button><div class="tag">' + t('app.tag') + '</div></header>' +
+    return '<header class="top"><a class="brand" href="index.html' + (S.urlDemo ? '?demo=1' : '') + '" aria-label="NeuroBaseline"><span class="brand-mark" aria-hidden="true">n<span>·</span></span>NeuroBaseline</a><button class="language" data-act="lang2" data-v="' + (I.lang === 'vi' ? 'en' : 'vi') + '">' + t('ui.lang') + '</button><div class="tag">' + t('app.tag') + '</div></header>' +
       (S.mode === 'demo' ? '<div class="banner demo"><span>' + t('home.demo') + '</span><button class="text-btn" data-act="demo">' + t('set.demo.off') + '</button></div>' : '') +
       (!S.okWrite ? '<div class="banner warn">' + t('home.nosave') + '</div>' : '');
   }
@@ -79,6 +81,7 @@
         } else h += '<li>' + t('why.' + r) + '</li>';
       });
       h += '</ul></div>';
+      if (NB.habitsUi) h += NB.habitsUi.statusNote(a);   // sleep in the week before, next to the person's own usual
       var rk = riskEval(); // risk context next to a yellow or red light
       if (rk && rk.present.length) h += '<p class="small">' + t('risk.status', { n: rk.present.length }) + '</p><button class="btn" data-act="riskView">' + t('risk.card.view') + '</button>';
       if (a.light === 'red') h += '<button class="btn" data-act="go" data-v="settings">' + t('st.red.file') + '</button>';   // the file the clinician view reads
@@ -168,7 +171,7 @@
       (due <= now ? t('home.dueNow') : t('ui.dueIn', { n: '<span class="due-num">' + days + '</span>' }) + '<span class="due-date">' + fmtDate(due) + '</span>') + '</div>' +
       '<div class="session-meta"><span>' + t('ui.minutes') + '</span><span>' + t('ui.session') + '</span></div>' +
       '<button class="btn big primary hero-cta" data-act="start"><span>' + t('home.start') + '</span><span class="cta-arrow" aria-hidden="true">→</span></button><p class="muted small">' + t('home.tip') + '</p></section>' +
-      '<aside class="home-status">' + statusCard(e) + '<p class="privacy-caption">' + t('ui.private') + '</p></aside>' + activityTiles();
+      '<aside class="home-status">' + statusCard(e) + '<p class="privacy-caption">' + t('ui.private') + '</p></aside>' + activityTiles() + (NB.insightUi ? NB.insightUi.card() : '') + (NB.habitsUi ? NB.habitsUi.card() : '');
     if (e.sessions.some(function (a) { return a.role !== 'previous'; })) h += chartCard(e);
     h += '<div class="extra-tiles">' + extraTile('health', riskCard()) + (NB.eegUi ? extraTile('eeg', NB.eegUi.card()) : '') + '</div>';
     return h + '</main>';
@@ -265,6 +268,7 @@
       '<section class="card">' + setHead('file', 'set.export.t') + '<p class="muted">' + t('set.export.x') + '</p><p class="muted">' + t('profile.code') + ': <b class="code">' + S.data.code + '</b></p>' +
       (S.data.risk ? '<label class="check"><input type="checkbox" id="expRisk"' + (ui.expRisk ? ' checked' : '') + '> <span>' + t('set.expRisk') + '</span></label>' : '') +
       ((S.data.eeg || []).length ? '<label class="check"><input type="checkbox" id="expEeg"' + (ui.expEeg ? ' checked' : '') + '> <span>' + t('set.expEeg') + '</span></label>' : '') +
+      (NB.habits && NB.habits.clean(S.data.habits).length ? '<label class="check"><input type="checkbox" id="expHabits"' + (ui.expHabits ? ' checked' : '') + '> <span>' + t('set.expHabits') + '</span></label>' : '') +
       '<button class="btn" data-act="download">' + t('set.download') + '</button>' + (canShare ? '<button class="btn" data-act="share">' + t('set.share') + '</button>' : '') +
       '<button class="btn" data-act="copy" id="copyBtn">' + t('set.copy') + '</button></section>' +
       backupCard() +
@@ -336,7 +340,7 @@
 
   function render() {
     NB.access.clear();
-    var nav = ['home', 'history', 'settings', 'riskSum', 'eeg', 'eegResult'].indexOf(ui.screen) >= 0;
+    var nav = ['home', 'habits', 'insight', 'history', 'settings', 'riskSum', 'eeg', 'eegResult'].indexOf(ui.screen) >= 0;
     app().innerHTML = '<div class="wrap screen-' + ui.screen + (nav ? ' has-nav' : '') + '">' + (V[ui.screen] || V.home)() + (nav ? bottomNav() : '') + '</div>';
     var host = document.getElementById('chartHost');
     if (host) NB.chart.render(host, evalNow(), ui.ind);
@@ -429,7 +433,7 @@
   }
 
   // ---------- export ----------
-  function exportText() { return JSON.stringify(S.exportObject(ui.expRisk, ui.expEeg), null, 1); } // risk profile and EEG results are left out unless the person ticks the boxes
+  function exportText() { return JSON.stringify(S.exportObject(ui.expRisk, ui.expEeg, ui.expHabits), null, 1); } // risk profile, EEG results and daily habits are left out unless the person ticks the boxes
   function exportName() { return 'neurobaseline-' + S.data.code + '-' + new Date(NB.now()).toISOString().slice(0, 10) + '.json'; }
 
   // ---------- device, backup ----------
@@ -530,7 +534,7 @@
       if (k) S.data.deviceKeys = (S.data.deviceKeys || []).concat([k]).slice(-20);
       S.addEvent({ type: 'deviceSame', key: k }); go('redflags');
     },
-    backup: function () { saveFile(JSON.stringify(S.exportObject(true, true), null, 1), 'neurobaseline-backup-' + S.data.code + '-' + localDay() + '.json'); },
+    backup: function () { saveFile(JSON.stringify(S.exportObject(true, true, true), null, 1), 'neurobaseline-backup-' + S.data.code + '-' + localDay() + '.json'); },
     restorePick: function () { var f = document.getElementById('restoreFile'); if (f) f.click(); },
     demo: function () { S.setMode(S.mode === 'demo' ? 'real' : 'demo'); ui.lastId = null; ui.restoreMsg = null; boot(); },
     reset: function () { if (window.confirm(t('set.reset.q'))) { S.reset(); ui.prof = {}; ui.agree = false; boot(); } }
@@ -547,6 +551,7 @@
     else if (el.id === 'riskAgree') { ui.riskAgree = el.checked; var rb = document.getElementById('riskBtn'); if (rb) rb.disabled = !el.checked; }
     else if (el.id === 'expRisk') ui.expRisk = el.checked;
     else if (el.id === 'expEeg') ui.expEeg = el.checked;
+    else if (el.id === 'expHabits') ui.expHabits = el.checked;
     else if (el.id === 'eegFile' && NB.eegUi) NB.eegUi.file(el);
     else if (el.id === 'restoreFile') restoreFrom(el);
   });
@@ -569,12 +574,14 @@
 
   function boot() {
     S.load(); I.set(S.lang || 'en');
-    if (!S.lang) go('lang');
+    if (!S.lang && !(C.demoParam && S.mode === 'demo')) go('lang');   // the example profile opens straight away, in English; the header button switches language
     else if (!S.data.consentAt) go('intro');
     else if (!S.data.profile) go('profile');
     else go('home');
   }
   NB.app = { boot: boot, go: go, ui: ui, evalNow: evalNow };
   if (NB.eegUi) NB.eegUi.init({ V: V, ACT: ACT, head: head, backBtn: backBtn, go: go, ui: ui, fmtShort: fmtShort });   // optional brain-rhythm check
+  if (NB.habitsUi) NB.habitsUi.init({ V: V, ACT: ACT, head: head, backBtn: backBtn, go: go, flow: flow, choices: choices, flowBack: flowBack, autoAdvance: autoAdvance, icon: icon, esc: esc, evalNow: evalNow, fmtShort: fmtShort });   // optional daily habits
+  if (NB.insightUi) NB.insightUi.init({ V: V, ACT: ACT, head: head, backBtn: backBtn, go: go, icon: icon });   // summary across sources and plan
   boot();
 })();

@@ -3,6 +3,7 @@
 (function (root) {
   'use strict';
   var DAY = 864e5;
+  var HB = (typeof module !== 'undefined' && module.exports) ? require('./habits.js') : root.NB.habits;   // daily habits check-in
   var CHECKLIST = ['acute', 'meds', 'mood', 'sleep', 'b12', 'tsh', 'bloods', 'hearing', 'vision', 'alcohol', 'vasc', 'collateral'];
   var DECISIONS = ['none', 'watch', 'repeat', 'primary', 'neuro', 'geri', 'mental', 'other'];
   var VASCULAR = ['hypertension', 'diabetes', 'ldl', 'smoking', 'obesity'];
@@ -44,6 +45,7 @@
                  usable: !!r.usable && ok, simulated: !!r.simulated, features: ok ? clean : null };
       }).sort(function (a, b) { return Date.parse(a.at) - Date.parse(b.at); });
     }
+    if (Array.isArray(d.habits)) { var hb = HB.clean(d.habits); if (hb.length) out.habits = hb; }
     if (d.risk && typeof d.risk === 'object' && d.risk.answers && typeof d.risk.answers === 'object') {
       var answers = {};
       (riskGroups || []).forEach(function (g) {
@@ -75,6 +77,7 @@
     var rank = urgent ? 0 : (status === 'red' && !reviewed) ? 1 : status === 'yellow' ? 2 : overdue ? 3 : status === 'red' ? 4 : status === 'green' ? 5 : 6;
     return { e: e, risk: risk, status: status, rank: rank, urgent: urgent, lastFlag: lastFlag, overdue: overdue, reviewed: reviewed, stale: stale, lastAt: lastAt,
              needsReview: urgent || (status === 'red' && !reviewed),
+             habits: d.habits && d.habits.length ? { m: HB.summarize(d.habits, now, 28), before: lastAt !== null ? HB.compare(d.habits, lastAt) : null } : null,   // last 28 days; week before the last session
              accessAt: d.access && d.access.length ? Date.parse(d.access[d.access.length - 1]) : null };
   }
 
@@ -95,6 +98,9 @@
     if (ctx.med) add('meds', 'c.tr.med');
     if (ctx.mood) add('mood', 'c.tr.mood');
     if (ctx.poor) add('sleep', 'c.tr.poor', { n: ctx.poor });
+    var hb = sum.habits;
+    if (hb && hb.m.nSleep >= 7 && hb.m.sleepH < HB.TARGET.shortH) add('sleep', 'c.tr.habit', { h: hb.m.sleepH });
+    if (hb && hb.before && hb.before.sleep === 'less') add('sleep', 'c.tr.habitless', { d: -hb.before.sleepDiff });
     if (risk) {
       var has = function (id) { return risk.present.indexOf(id) >= 0; };
       if (risk.phq2 !== null && risk.phq2 >= 3) add('mood', 'c.tr.phq', { s: risk.phq2 });

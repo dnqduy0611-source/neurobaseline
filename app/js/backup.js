@@ -57,6 +57,9 @@
     if (d.risk == null) delete d.risk;
     if (d.eeg != null && !Array.isArray(d.eeg)) return bad('content');
     if (d.eeg == null) delete d.eeg;
+    if (d.habits != null && !Array.isArray(d.habits)) return bad('content');   // daily habits; the app keeps known answers only when it reads them
+    if (d.habits == null) delete d.habits;
+    else d.habits = d.habits.filter(function (x) { return isObj(x) && typeof x.day === 'string' && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(x.day); }).slice(-800);
     if (d.epoch != null && !isEpoch(d.epoch)) return bad('content');
     if (d.deviceKeys != null) d.deviceKeys = Array.isArray(d.deviceKeys) ? d.deviceKeys.filter(function (k) { return typeof k === 'string' && k.length <= 60; }).slice(0, 20) : [];
     return { ok: true, data: d, info: { code: d.code, sessions: d.sessions.length, exportedAt: isDate(file.exportedAt) ? file.exportedAt : null } };

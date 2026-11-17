@@ -13,14 +13,18 @@ Research prototype for the Future Health Digital Innovation Challenge, Challenge
 
 | Path | What it is |
 |---|---|
-| `index.html` | Landing page of the hosted prototype: links to the example profile, the participant app, the clinician view and the documents. |
+| `index.html` | Landing page of the hosted prototype: the participant app and the clinician view running live with simulated data, what is built, the evidence, safeguards and limits, and links to the documents. |
 | `docs/TECHNICAL_DOCUMENTATION.md` | Technical documentation: solution, methods, evidence, responsible AI, data sources, assumptions, dependencies, limitations, path to pilot. |
 | `app/` | The Tier 1 web app: four short cognitive tasks on a phone, a personal baseline, a Reliable Change Index and a status light. No build step, no server, no dependencies. |
 | `app/tests/stats.test.js` | Unit tests for the statistics, the device check and baseline periods (26 tests). |
 | `app/tests/risk.test.js` | Unit tests for the risk profile (11 tests). |
+| `app/js/habits.js`, `app/js/habits-ui.js` | The daily habits check-in: sleep, physical activity and social contact, once a day. |
+| `app/tests/habits.test.js` | Unit tests for the daily habits check-in (12 tests). |
+| `app/js/insight.js`, `app/js/insight-ui.js` | Insights and plan: one summary across session results, daily habits, risk profile and EEG, and a plan of at most three steps. |
+| `app/tests/insight.test.js` | Unit tests for the rules behind the insights and the plan (13 tests). |
 | `app/clinician.html` | The clinician view: priority list, per-participant summary, checklist of reversible contributors, review record. |
-| `app/tests/clin.test.js` | Unit tests for the clinician view logic and the simulated cohort (10 tests). |
-| `app/tests/backup.test.js` | Unit tests for the check a backup file passes before it is restored (6 tests). |
+| `app/tests/clin.test.js` | Unit tests for the clinician view logic and the simulated cohort (11 tests). |
+| `app/tests/backup.test.js` | Unit tests for the check a backup file passes before it is restored (7 tests). |
 | `app/tests/eeg.test.js` | Unit tests for the in-app EEG processing, checked against the Python pipeline (8 tests). |
 | `app/samples/` | Six short headband-style EEG recordings derived from OpenNeuro ds004504 (CC0), 12 MB. |
 | `eeg/` | Python analysis of public EEG data (OpenNeuro ds004504): do simple spectral features separate dementia from healthy controls, and do headband-position channels keep that? See [`eeg/REPORT.md`](eeg/REPORT.md). |
@@ -47,6 +51,8 @@ node tests/risk.test.js
 node tests/clin.test.js
 node tests/eeg.test.js
 node tests/backup.test.js
+node tests/habits.test.js
+node tests/insight.test.js
 ```
 
 ## How a session works (about 5 minutes)
@@ -136,6 +142,26 @@ A separate, separately consented questionnaire of about 3 minutes (five short st
 Also recorded as context, never scored: usual sleep duration, loud snoring or breathing pauses, and a first-degree relative with dementia. The Commission states that the evidence on sleep is not yet clear enough for a recommendation.
 
 Where it is used: a card on the home screen, a full summary screen, and one line next to any yellow or red light ("Your risk profile lists *n* factors you can act on"). The risk profile is **left out of the exported file** unless the person ticks a box.
+
+## Daily habits check-in (optional)
+
+Four questions once a day about the night and the day before: hours slept, sleep quality, physical activity and time with other people. About 30 seconds; days may be skipped.
+
+- **Logic.** `js/habits.js` holds pure functions: cleaning of stored or imported entries (known answers only, one per calendar day), a summary of any window of days, the weekly statements, and the comparison of the week before a session with the 56 days before it.
+- **Screens.** `js/habits-ui.js` adds a card to the home screen, the four-question flow, and a page with the week's summary, a 28-day chart and the habits in the seven days before each of the last four sessions. Text is in `js/i18n-habits.js`.
+- **Next to the results.** When a session is outside the usual range and sleep in the week before was at least one hour below the person's own mean, the status card says so in one sentence.
+- **No effect on the status.** Daily habits never change the status, the baseline or the schedule.
+- **Sharing.** Entries are left out of the exported file unless the person ticks the box. The clinician view then shows the last 28 days and marks the sleep item of the checklist when the check-ins show short sleep.
+- **Example profile.** Eight weeks of simulated check-ins, generated in `js/demo.js`.
+
+## Insights and plan
+
+One page that reads session results, daily habits, the risk profile and the optional EEG check together.
+
+- **Logic.** `js/insight.js` holds two pure functions. `fromData` reduces a participant's stored data to the facts the rules use; `build` applies the rules and returns one line per source, at most three statements across sources, a plan of at most three steps, and the referral level. The rules are listed in section 6.12 of the technical documentation.
+- **Screens.** `js/insight-ui.js` turns the result into words: a card on the home screen and the page itself. Text is in `js/i18n-insight.js`.
+- **Clinician view.** The same result opens the detail page as "Summary across sources", in clinical wording.
+- **No generated text and no effect on the status.** Every sentence is fixed and chosen by a rule; each step of the plan shows why it is there.
 
 ## Tier 2b: brain-rhythm check (optional)
 

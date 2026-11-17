@@ -23,8 +23,9 @@
     },
     load: function () {
       S.lang = get(K.lang);
-      if (C.demoParam && !C.qa && !S.demoApplied) { S.demoApplied = true; del(K.demo); set(K.mode, 'demo'); }
-      S.mode = (!C.qa && get(K.mode) === 'demo') ? 'demo' : 'real';
+      // index.html?demo=1 shows the simulated profile for this page only; it does not change the mode a participant chose on this device
+      if (C.demoParam && !C.qa && !S.demoApplied) { S.demoApplied = true; S.urlDemo = true; del(K.demo); }
+      S.mode = (!C.qa && (S.urlDemo || get(K.mode) === 'demo')) ? 'demo' : 'real';
       var d = null; try { var raw = get(S.key()); d = raw ? JSON.parse(raw) : null; } catch (e) { d = null; }
       if (!d || d.schema !== 1) d = S.mode === 'demo' ? NB.demo.build(NB.now()) : S.blank();
       S.data = d; S.save();
@@ -32,14 +33,14 @@
     save: function () { S.okWrite = set(S.key(), JSON.stringify(S.data)); return S.okWrite; },
     setLang: function (l) { S.lang = l; set(K.lang, l); },
     setMode: function (m) { // entering demo always rebuilds the simulated profile so its dates are relative to today
-      del(K.demo); set(K.mode, m === 'demo' ? 'demo' : 'real'); S.load();
+      S.urlDemo = false; del(K.demo); set(K.mode, m === 'demo' ? 'demo' : 'real'); S.load();
     },
     addSession: function (s) { S.data.sessions.push(s); return S.save(); },
     addEvent: function (e) { e.at = new Date(NB.now()).toISOString(); S.data.events.push(e); S.save(); },
     reset: function () { del(S.key()); S.load(); },
-    exportObject: function (includeRisk, includeEeg) {
-      var d = JSON.parse(JSON.stringify(S.data)); if (!includeRisk) delete d.risk; if (!includeEeg) delete d.eeg;   // health answers leave the device only by explicit choice
-      return { app: 'NeuroBaseline', version: C.version, exportedAt: new Date(NB.now()).toISOString(), mode: C.qa ? 'qa' : S.mode, full: !!(includeRisk && includeEeg),
+    exportObject: function (includeRisk, includeEeg, includeHabits) {
+      var d = JSON.parse(JSON.stringify(S.data)); if (!includeRisk) delete d.risk; if (!includeEeg) delete d.eeg; if (!includeHabits) delete d.habits;   // health answers leave the device only by explicit choice
+      return { app: 'NeuroBaseline', version: C.version, exportedAt: new Date(NB.now()).toISOString(), mode: C.qa ? 'qa' : S.mode, full: !!(includeRisk && includeEeg && includeHabits),
                config: { rt: C.rt, gng: C.gng, sdmt: C.sdmt, mem: C.mem, baseline: C.baseline, rci: C.rci, indicators: C.indicators },
                data: d };
     }

@@ -6,6 +6,7 @@ var ST = require('../js/stats.js');
 var RK = require('../js/risk.js');
 var CL = require('../js/clin-core.js');
 var DC = require('../js/demo-cohort.js');
+var HB = require('../js/habits.js');
 var DEPS = { stats: ST, risk: RK, config: C }, DAY = 864e5, NOW = Date.parse('2026-11-13T09:00:00Z');
 var n = 0;
 function test(name, f) { f(); n++; console.log('ok  ' + name); }
@@ -103,5 +104,22 @@ test('reported difficulty seeing or tapping reaches the clinician without counti
   assert.deepStrictEqual(CL.prompts(p, sum, NOW).vision, [['c.tr.access', {}]]);
   var none = CL.sanitize(wrap({ code: 'NB-TEST2', sessions: [s(0)], events: [] }), RK.GROUPS);
   assert.strictEqual(CL.summarize(none, DEPS, NOW).accessAt, null);
+});
+test('daily habits in a file are cleaned, summarised and prompt the sleep item', function () {
+  function s(day) { return { completed: true, startedAt: new Date(NOW - day * DAY).toISOString(), measures: { rt: 350, sdmt: 46, mem: 7, gng: 8 } }; }
+  function h(k, sleepH) { return { day: HB.addDays(HB.dayKey(NOW), -k), sleepH: sleepH, sleepQ: 'poor', active: 'none', social: 'no', note: '<script>' }; }
+  var habits = [{ day: 'x', sleepH: '7' }, 'junk'];
+  for (var k = 40; k >= 8; k--) habits.push(h(k, '7'));
+  for (k = 7; k >= 1; k--) habits.push(h(k, '5'));
+  var p = patient({ code: 'NB-HAB01', sessions: [s(40), s(1)], events: [], habits: habits });
+  assert.strictEqual(p.data.habits.length, 40); assert.strictEqual(p.data.habits[0].note, undefined);
+  var sum = CL.summarize(p, DEPS, NOW);
+  assert.strictEqual(sum.habits.m.n, 27); assert.strictEqual(sum.habits.m.shortNights, 7);
+  assert.strictEqual(sum.habits.before.sleep, 'less'); assert.strictEqual(sum.habits.before.sleepDiff, -2);
+  assert.deepStrictEqual(CL.prompts(p, sum, NOW).sleep, [['c.tr.habitless', { d: 2 }]]);
+  var short = patient({ code: 'NB-HAB02', sessions: [s(1)], events: [], habits: habits.slice(-7).concat([h(0, 'lt5')]) });
+  assert.deepStrictEqual(CL.prompts(short, CL.summarize(short, DEPS, NOW), NOW).sleep, [['c.tr.habit', { h: 4.9 }]]);
+  var none = patient({ code: 'NB-HAB03', sessions: [s(1)], events: [], habits: 'nope' });
+  assert.strictEqual(none.data.habits, undefined); assert.strictEqual(CL.summarize(none, DEPS, NOW).habits, null);
 });
 console.log('\n' + n + ' tests passed');

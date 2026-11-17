@@ -61,4 +61,10 @@ test('missing optional parts get safe defaults', function () {
   assert.strictEqual(r.data.epoch, 1); assert.deepStrictEqual(r.data.deviceKeys, ['android/360x800/touch']);
   assert.ok(!('risk' in r.data) && !('eeg' in r.data));
 });
+test('daily habits survive a backup; anything that is not a dated entry is dropped', function () {
+  var r = BK.check(file({ habits: [{ day: '2026-11-01', sleepH: '7', social: 'yes' }, { day: '<b>', sleepH: '7' }, 'junk', null] }));
+  assert.strictEqual(r.ok, true); assert.deepStrictEqual(r.data.habits, [{ day: '2026-11-01', sleepH: '7', social: 'yes' }]);
+  assert.strictEqual(BK.check(file({ habits: 'all of them' })).error, 'content');
+  assert.ok(!('habits' in BK.check(file()).data));
+});
 console.log('\n' + n + ' tests passed');

@@ -71,7 +71,7 @@
   }
 
   // ---------- detail ----------
-  var sectionKeys = ['status', 'ind', 'trend', 'charts', 'risk', 'eeg', 'check', 'review', 'log'];
+  var sectionKeys = ['status', 'synth', 'ind', 'trend', 'charts', 'risk', 'habits', 'eeg', 'check', 'review', 'log'];
   function sec(title, body, cls) {
     var key = sectionKeys.filter(function (k) { return t('c.sec.' + k) === title; })[0];
     return '<section' + (key ? ' id="clinical-' + key + '"' : '') + ' class="card ' + (cls || '') + '"><h2>' + title + '</h2>' + body + '</section>';
@@ -93,6 +93,19 @@
       t('c.hand') + '</td><td>' + (d.profile.hand ? t('hand.' + d.profile.hand) : t('c.none')) + '</td></tr><tr><td>' + t('c.enrolled') + '</td><td>' + fmtDate(first) + '</td></tr><tr><td>' + t('c.sessions') +
       '</td><td>' + e.sessions.length + '</td></tr><tr><td>' + t('c.exported') + '</td><td>' + fmtDate(p.exportedAt ? Date.parse(p.exportedAt) : null) + '</td></tr></table>';
     h += '<div class="two">' + sec(t('c.sec.status'), st) + sec(t('c.sec.profile'), prof) + '</div>';
+
+    // summary across sources: the same rules as the participant's "Insights and plan", in clinical wording
+    var inp = NB.insight.fromData(d, { stats: ST, config: C, risk: RK, habits: NB.habits, eeg: NB.eeg }, now), syn = NB.insight.build(inp), wk = inp.habits ? inp.habits.week : null;
+    var sy = '<table class="kv"><tr><td>' + t('c.in.src.tasks') + '</td><td>' + t('c.st.' + (e.light || (e.phase === 'monitoring' ? 'ready' : e.phase)), { done: e.done, total: e.total }) + '</td></tr><tr><td>' +
+      t('c.in.src.habits') + '</td><td>' + (!inp.habits ? t('c.in.notshared') : !inp.habits.notes.enough ? t('c.in.h.few', { n: wk.n })
+        : t('c.in.h', { h: wk.nSleep ? loc(wk.sleepH.toFixed(1)) : t('c.none'), a: wk.activeDays, m: wk.nActive, so: wk.socialDays, sm: wk.nSocial })) + '</td></tr><tr><td>' +
+      t('c.in.src.risk') + '</td><td>' + (!inp.risk ? t('c.in.notshared') : inp.risk.present.length
+        ? t('c.in.r', { n: inp.risk.present.length, names: inp.risk.present.map(function (id) { return t('f.' + id); }).join(', ') }) : t('c.in.r.none')) + '</td></tr><tr><td>' +
+      t('c.in.src.eeg') + '</td><td>' + (inp.eeg ? t('c.eeg.s.' + inp.eeg.status) : t('c.in.notshared')) + '</td></tr></table><p><b>' + t('c.in.links') + '</b></p>' +
+      (syn.links.length ? '<ul>' + syn.links.map(function (l) {
+        return '<li>' + t('c.in.' + l.key, { h: l.vars.h != null ? loc(l.vars.h.toFixed(1)) : '', d: l.vars.d != null ? loc(l.vars.d.toFixed(1)) : '' }) + '</li>'; }).join('') + '</ul>'
+        : '<p class="muted">' + t('c.in.l.none') + '</p>') + '<p class="muted small">' + t('c.in.note') + '</p>';
+    h += sec(t('c.sec.synth'), sy);
 
     // indicators vs baseline
     var lastStd = e.sessions.filter(function (a) { return a.role !== 'control' && a.role !== 'previous'; }).pop();
@@ -129,6 +142,21 @@
     }
     h += sec(t('c.sec.risk'), rk);
 
+    // daily habits, if shared
+    var hbv;
+    if (!s.habits) hbv = '<p class="muted">' + t('c.hb.none') + '</p>';
+    else {
+      var m = s.habits.m, bf = s.habits.before, one = function (x) { return loc(x.toFixed(1)); };
+      hbv = '<table class="kv"><tr><td>' + t('c.hb.n') + '</td><td>' + m.n + '</td></tr><tr><td>' + t('c.hb.sleep') + '</td><td>' +
+        (m.nSleep ? t('c.hb.sleep.v', { h: one(m.sleepH), k: m.shortNights, n: m.nSleep, p: m.poorNights }) : t('c.none')) + '</td></tr><tr><td>' +
+        t('c.hb.active') + '</td><td>' + (m.nActive ? t('c.hb.days', { k: m.activeDays, n: m.nActive }) : t('c.none')) + '</td></tr><tr><td>' +
+        t('c.hb.social') + '</td><td>' + (m.nSocial ? t('c.hb.days', { k: m.socialDays, n: m.nSocial }) : t('c.none')) + '</td></tr><tr><td>' + t('c.hb.before') + '</td><td>' +
+        (bf && bf.week.nSleep ? t('c.hb.before.v', { h: one(bf.week.sleepH), n: bf.week.nSleep }) +
+          (bf.usual ? t('c.hb.before.u', { u: one(bf.usual.sleepH), d: (bf.sleepDiff > 0 ? '+' : bf.sleepDiff < 0 ? '−' : '') + one(Math.abs(bf.sleepDiff)) }) : '') : t('c.hb.before.none')) +
+        '</td></tr></table><p class="muted small">' + t('c.hb.note') + '</p>';
+    }
+    h += sec(t('c.sec.habits'), hbv);
+
     // resting EEG, if shared
     var eg;
     if (!d.eeg || !d.eeg.length) eg = '<p class="muted">' + t('c.eeg.none') + '</p>';
@@ -147,7 +175,9 @@
     var pr = CL.prompts(p, s, now), ck = p.checklist || {};
     var order = CL.CHECKLIST.slice().sort(function (a, b) { return (pr[b] ? 1 : 0) - (pr[a] ? 1 : 0); });
     var cl = '<p class="muted small">' + t('c.check.lead') + '</p><ul class="check">' + order.map(function (id) {
-      var why = (pr[id] || []).map(function (x) { var v = x[1]; if (v.ids) v = { names: v.ids.map(function (i) { return t('f.' + i); }).join(', ') }; return t(x[0], v); });
+      var why = (pr[id] || []).map(function (x) { var v = x[1]; if (v.ids) v = { names: v.ids.map(function (i) { return t('f.' + i); }).join(', ') };
+        else if (typeof v.h === 'number' || typeof v.d === 'number') v = { h: typeof v.h === 'number' ? loc(v.h.toFixed(1)) : '', d: typeof v.d === 'number' ? loc(v.d.toFixed(1)) : '' };
+        return t(x[0], v); });
       return '<li class="' + (pr[id] ? 'prompted' : '') + '"><label><input type="checkbox" data-ck="' + id + '"' + (ck[id] ? ' checked' : '') + '> <span>' + t('c.ck.' + id) + '</span></label>' +
         (why.length ? '<div class="small why"><span class="tag need">' + t('c.prompted') + '</span> ' + esc(why.join('; ')) + '</div>' : '') + '</li>';
     }).join('') + '</ul>';
@@ -216,7 +246,9 @@
       r.readAsText(f);
     });
   }
+  var DEMO_V = 2;   // raised when the simulated cohort gains new content, so a stored copy is rebuilt
   function toggleDemo() {
+    store.demoV = DEMO_V;
     if (hasDemo()) Object.keys(store.patients).forEach(function (k) { if (store.patients[k].source === 'demo') delete store.patients[k]; });
     else NB.demoCohort.build(Date.now()).forEach(function (d) {
       var clean = CL.sanitize({ app: 'NeuroBaseline', exportedAt: new Date().toISOString(), data: d }, RK.GROUPS);
@@ -259,5 +291,7 @@
 
   I.set(get(LANG) || get(C.keys.lang) || 'en');
   NB.clinView = { render: render, store: store };
-  render();
+  if (C.demoParam && !Object.keys(store.patients).length) toggleDemo();   // clinician.html?demo=1 opens with the simulated cohort instead of an empty list
+  else if (C.demoParam && hasDemo() && store.demoV !== DEMO_V) { toggleDemo(); toggleDemo(); }   // a cohort stored by an earlier version
+  else render();
 })();
