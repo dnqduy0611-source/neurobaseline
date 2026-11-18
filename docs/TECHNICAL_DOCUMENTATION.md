@@ -7,7 +7,7 @@
 | Team | Braincore |
 | Team lead and contact | DO NGOC QUOC DUY, dnqduy.0611@gmail.com |
 | Members | DO NGOC QUOC DUY (individual entry, one member) |
-| Document version | 1.7, 17 November 2026 (see [revision history](#revision-history)) |
+| Document version | 1.11, 18 November 2026 (see [revision history](#revision-history)) |
 | Repository | https://github.com/dnqduy0611-source/neurobaseline |
 | Hosted prototype | https://dnqduy0611-source.github.io/neurobaseline/ |
 
@@ -25,6 +25,10 @@
 | 1.5 | 13 November 2026 | Hours slept the night before are asked before each session and stored with it (section 6.2). Recorded only; no rule uses them. |
 | 1.6 | 17 November 2026 | Daily habits check-in (section 6.11): sleep, physical activity and social contact once a day, shown next to the session results, compared with the person's own earlier weeks and shared with the clinician by explicit choice. Recorded only; no rule uses them. The landing page shows the participant app and the clinician view running. 87 automated tests. |
 | 1.7 | 17 November 2026 | Insights and plan (section 6.12): one summary across session results, daily habits, risk profile and EEG, with a plan of at most three steps for the participant and the same summary in clinical wording for the clinician. Fixed rules; the status rule is unchanged. 100 automated tests. |
+| 1.8 | 18 November 2026 | Following the plan (section 6.12): each habit step of the plan is counted from the daily check-ins, the last 7 days next to the 7 days before; the clinician view lists the plan and the follow-through. 105 automated tests. |
+| 1.9 | 18 November 2026 | Estimate of a lasting change (section 6.13): a logistic regression fitted on the simulated cohort estimates whether a flagged change is a lasting one, from the earlier trend, the size of the change, a reported unusual day, sleep before the session and EEG. It runs in the app, shows the contribution of every input and does not change the status. Results in section 7.2. Table of test suites brought up to date. 117 automated tests. |
+| 1.10 | 18 November 2026 | Layout of the insights page for older readers (section 6.12): the short answer is always shown and the reasons open on request; each step of the plan has an icon, one line and a week of marks; the estimate (section 6.13) shows ten marks and short phrases. The rules, the model and the status are unchanged. 117 automated tests. |
+| 1.11 | 18 November 2026 | Estimate of a lasting change (section 6.13), after a review of the code against the training script: the app uses the earlier trend only once two earlier follow-up sessions count towards it, as in the training data, and skips a damaged EEG entry. The coefficients are unchanged. 117 automated tests. |
 
 ---
 
@@ -68,7 +72,8 @@
 - *Public EEG data (88 people).* The theta/alpha ratio alone separates Alzheimer's disease from healthy controls with AUC 0.87 (95 % CI 0.78–0.95). With only four channels at consumer-headband positions the AUC is 0.87–0.88. A machine-learning classifier did not improve on that single ratio.
 - *Simulation (10 000 simulated people per cohort, 36 months).* With every method tuned to the same false-referral rate of 5 %, a fixed cut-off wrongly refers stable people with low education four times as often as those with high education (8.9 % vs 2.1 %); personal-baseline methods refer all education groups equally. The rule built into the app finds 80 % of slow decliners within 24 months at a 5.8 % false-referral rate. A baseline that keeps adapting to new sessions absorbs the decline it should detect (29 % found against a fixed baseline, 4–15 % against adaptive ones).
 - *National survey data (NHANES 2011–2014, 3011 adults aged 60 and over).* On a standard symbol–digit test, college graduates score 2.2 SDs above people who did not finish 9th grade at the same age and sex. A single cut-off that flags 5 % of people with no memory complaint flags 40.2 % of the least schooled and 0.7 % of college graduates.
-- *Software.* 100 automated tests pass (88 for the app, 12 for the model).
+- *Estimate of a lasting change (simulated cohorts).* Of the sessions the status rule flags, 31 % are a true change. A logistic regression on five inputs separates them with AUC 0.87, against 0.84 for the rule's trend statistic alone. Of the sessions it calls more likely lasting, 84 % are a true change; of those it calls more likely temporary, 12 %. It has not seen data from real people.
+- *Software.* 117 automated tests pass (103 for the app, 14 for the model).
 
 **What it does not show.** No real person has been followed over time with this system. The EEG data are cross-sectional and from clinical electrodes. The simulation rests on assumed parameters. Section 12 lists the limits in full.
 
@@ -127,7 +132,8 @@ Everything described here was built during the challenge. Nothing existed before
 | Personal baseline, Reliable Change Index, trend test, status rules | Working, unit-tested | `app/js/stats.js` |
 | Risk profile (Lancet 14 factors, LIBRA, PHQ-2) | Working, unit-tested | `app/js/risk.js` |
 | Daily habits check-in: sleep, physical activity, social contact; weekly statements; comparison with the person's own earlier weeks | Working, unit-tested | `app/js/habits.js`, `app/js/habits-ui.js` |
-| Insights and plan: one summary across session results, daily habits, risk profile and EEG; a plan of at most three steps; the same summary for the clinician | Working, unit-tested | `app/js/insight.js`, `app/js/insight-ui.js` |
+| Insights and plan: one summary across session results, daily habits, risk profile and EEG; a plan of at most three steps, each habit step counted from the daily check-ins; the same summary, the plan and the follow-through for the clinician | Working, unit-tested | `app/js/insight.js`, `app/js/insight-ui.js` |
+| Estimate of a lasting change for a flagged session: logistic regression on five inputs, run on the device, with the contribution of every input | Working, unit-tested; fitted on simulated data only | `sim/train_estimator.py`, `app/js/estimator.js`, `app/js/estimator-model.js` |
 | Clinician view: priority list, summary, checklist, review record, safe file import | Working, unit-tested | `app/clinician.html`, `app/js/clin-core.js` |
 | Demo profile and simulated cohort | Working, labelled as simulated | `app/js/demo.js`, `app/js/demo-cohort.js` |
 | EEG signal processing and analysis on public data | Offline scripts, results reported | `eeg/` |
@@ -350,9 +356,34 @@ One page that reads the four sources together: session results, daily habits, th
 | Daily check-ins are missing | Yellow or red status with no check-ins |
 
 - **The plan.** At most three steps for the next two weeks, in this order: urgent care after red-flag symptoms; sharing the file with a doctor at a red status, or repeating the session at a yellow one; sleep; physical activity; social contact; the remaining risk factors that are present, each with the action of section 6.6; then the steps that complete the data (daily check-ins, the risk profile) and keeping the monthly session. A habit named by both the risk profile and the daily check-ins is marked as such. Each step states why it is there and which sources it rests on, and the page says how many further steps are waiting.
+- **Following the plan.** A step about sleep, physical activity or social contact is counted from the daily check-ins, with nothing extra to fill in and nothing extra stored. A day counts when the check-in reports 7 hours of sleep or more, 30 minutes of activity or more, or time with other people. The step shows one mark per day for the last 7 days under the name of the day (a tick for goal reached, a dot for not reached, an empty ring for no check-in), the count for those 7 days over the days that were logged, and whether the share of days is higher, lower or the same as in the 7 days before; the count for the 7 days before is given in words with the reasons; the two weeks are compared only when each has at least three logged days. A day without a check-in is not counted against the person. The step that asks for daily check-ins counts the days with a check-in; the steps about a session show the date the next session opens. Steps with no measure in the app (seeing a doctor, a risk factor such as blood pressure) are not counted.
+- **Layout.** The page is written for people who read slowly or tire quickly. In order: what stands out, the plan, the estimate of section 6.13, when to see a doctor, the four sources, and how the page works. Each statement and each step shows one short line; the reasons, the sources it rests on and the longer advice open with a labelled button ("More", "Why and how"). The four sources show a name and a level and open in the same way. Buttons and the rows that open are at least 44 px high, and the mark of a day never relies on colour alone. The advice on seeing a doctor and the emergency signs are never folded away. On the demonstration profile about 2 200 characters are shown at first and about 2 800 more open on request. The layout has not been tested with older adults (limitation 16).
 - **When to see a doctor.** The page repeats the outcome of the status rule in words: urgent care, clinical review advised, repeat in two weeks, or no visit needed, and always lists the sudden symptoms that are an emergency.
-- **Clinician view.** The detail page opens with the same summary in clinical wording: the four sources in one table and the statements across sources. Sources the participant did not share are marked "not shared".
-- **What it does not do.** It does not estimate a risk of dementia, it does not weigh the sources into a score, and it does not infer a cause. The sleep statement describes the order of events.
+- **Clinician view.** The detail page opens with the same summary in clinical wording: the four sources in one table, the statements across sources, and the plan the same rules give with the follow-through for each step. Sources the participant did not share are marked "not shared", and steps that only ask the participant to add such a source are left out.
+- **What it does not do.** It does not estimate a risk of dementia and it does not infer a cause. The sleep statement describes the order of events. The one place where inputs are weighed into a number is the estimate of section 6.13, which is shown with its inputs and never changes the status.
+
+### 6.13 Estimate of a lasting change (machine-learning model)
+
+The status rule decides the light. For a session the rule has flagged, yellow or red, a small model answers one further question: is this more likely a lasting change in the person's results, or a session that was off for another reason?
+
+- **Why.** In the simulated cohorts only 31 % of flagged sessions are a true change; the others are noise or a bad day. The light separates the two poorly (AUC 0.59).
+- **Model.** Logistic regression with five inputs. The log-odds are a sum of one term per input, so the contribution of each input is exact and can be shown.
+
+| Input | What it is | Coefficient (log-odds per unit) | Points towards |
+|---|---|---|---|
+| `trend` | Trend statistic (section 6.4) of the person's earlier sessions, taken at the session before this one; 0 until two earlier follow-up sessions count towards it (a reported unusual day does not count) | +1.37 | Lasting |
+| `zmean` | RCI of this session, averaged over the three primary indicators | +0.89 | Lasting |
+| `flag` | The person reported an unusual day | −0.75 | Temporary |
+| `sleep` | Hours short of 7 in the night before, from the answer asked before each session or, failing that, the check-in of that day | −0.23 | Temporary |
+| `eeg` | z of the theta/alpha ratio against the personal EEG baseline, from a recording within 30 days of the session | +0.52 | Lasting |
+
+- **Why the trend is taken before the session.** The rule leaves a reported unusual day out of the trend, so the trend at the session itself means something different on such a day. A first version that used it gave the reported unusual day the wrong sign. The earlier value means the same on every day.
+- **Missing inputs.** An input the app does not have, such as the hours of sleep or an EEG recording, is set to the average of the training data and contributes nothing. The screen names it as not used.
+- **Training.** `sim/train_estimator.py` follows simulated cohorts with the app's own rule (section 6.5) and collects every flagged session up to a person's first red light: 182 093 sessions from six cohorts of 10 000 people for fitting, and 121 615 from four other cohorts for testing. Truth is whether the person's ability had really changed at that session. Sleep and EEG are not in the simulator of section 7.2; they are added under the assumptions of section 10. The fit is Newton's method with a small ridge penalty and needs numpy only.
+- **In the app.** `app/js/estimator.js` computes the same inputs from the stored data and applies the coefficients in `app/js/estimator-model.js`, a file the training script writes. A unit test requires the app to reproduce the script's probabilities on seven sets of inputs to six decimals. The model runs on the device; nothing is sent.
+- **What the participant sees.** No number. One of three bands, more likely temporary (below 0.35), could be either, or more likely lasting (above 0.65), with the share of true changes found in that band in the simulated test cohorts, worded as "about N in 10". The share is also drawn as ten marks. Below it, in fixed short phrases, the inputs that point each way; the inputs that were not available and the note on how the model was made open on request. When a short night is among the inputs, the sleep step of the plan is marked as resting on the estimate as well.
+- **What the clinician sees.** The probability, the band, and a table with the value and the contribution in log-odds of every input.
+- **What it does not do.** It never changes the status, the schedule or the advice on referral, and a low estimate does not cancel a red status. It is not a risk of dementia. It has not been fitted to, or tested on, data from real people; in a pilot the same script would be refitted with the result of the repeat session as the outcome.
 
 ---
 
@@ -416,6 +447,28 @@ One page that reads the four sources together: session results, daily habits, th
 - **Noise that lasts for weeks.** With thresholds set under independent noise, a month-to-month correlation of 0.3 raises false referrals from 5 % to 9.7 % for the trend test and for the Kalman filter alike; a correlation of 0.5 raises them to 14.1 % and 14.6 %. Detection within 24 months stays at 76 % for the trend test and falls from 90 % to 85 % for the Kalman filter.
 - **Not in the app.** The simulated decline is a straight line that never stops, which is the shape this filter expects, so the gain may be smaller on real trajectories. The filter is a candidate for the pilot (section 14), with its parameter set from real data.
 
+**A model beside the rule: is a flagged change a lasting one?** (added in version 1.9; [`sim/results/estimator.md`](../sim/results/estimator.md); the model is described in section 6.13). Test cohorts: four of 10 000 people, 121 615 flagged sessions up to each person's first red light, of which 31 % were a true change and 8 % carried a red light.
+
+| | AUC | Brier score |
+|---|---|---|
+| Model, five inputs | 0.869 | 0.124 |
+| Always answering the overall rate | 0.500 | 0.214 |
+| Trend statistic of the rule, alone | 0.839 | |
+| Light alone (red or yellow) | 0.588 | |
+| Model, yellow sessions only | 0.849 | |
+| Model under other assumptions (more bad days, noisier tasks, weaker EEG) | 0.840 | 0.140 |
+
+| Band shown to the participant | Share of flagged sessions | Of these, a true change |
+|---|---|---|
+| More likely temporary (estimate below 0.35) | 65 % | 12 % |
+| Could be either | 14 % | 44 % |
+| More likely lasting (estimate above 0.65) | 21 % | 84 % |
+
+- **The estimate matches what happens in the simulation.** In five groups of equal size the mean estimate was 3 %, 8 %, 18 %, 45 % and 82 %, and the share of true changes 5 %, 9 %, 17 %, 40 % and 84 %.
+- **The gain over the trend alone is modest** (AUC 0.87 against 0.84). It comes from what the rule does not use: how far all indicators moved together, a reported unusual day, sleep and EEG.
+- **One session in eight that the model calls more likely temporary is a true change.** This is why the estimate never overrides the rule or the advice on referral.
+- **It learned the simulator.** The coefficients carry the assumptions of the simulation, including those on sleep and EEG. The result shows that the method works from training to the screen; it does not show that these numbers hold in people.
+
 **Limits.** The generating parameters are assumptions. Session noise is independent between sessions and between indicators, which favours the trend test; real spells of poor sleep or illness would raise its false-referral rate (quantified above). Decline is linear. The trend test was added after the first results showed that single-session rules found few slow decliners, and the Kalman filter later still; neither was pre-specified.
 
 ### 7.3 Fixed cut-offs and education in national survey data
@@ -444,10 +497,13 @@ The two flagging columns are for people who report no worsening of memory.
 |---|---|---|
 | `app/tests/stats.test.js` | 26 | Task summaries, baseline, RCI, trend test, status rules, schedule, device key, new baseline period |
 | `app/tests/risk.test.js` | 11 | Factor classification, LIBRA range, BMI, PHQ-2 |
-| `app/tests/clin.test.js` | 10 | File sanitisation, priority order, review logic, checklist prompts, baseline period, reported access difficulty |
-| `app/tests/backup.test.js` | 6 | Acceptance of a valid backup, refusal of foreign, demo and damaged files, removal of markup |
+| `app/tests/clin.test.js` | 11 | File sanitisation, priority order, review logic, checklist prompts, baseline period, reported access difficulty, shared daily habits |
+| `app/tests/backup.test.js` | 7 | Acceptance of a valid backup, refusal of foreign, demo and damaged files, removal of markup, daily habits in a backup |
 | `app/tests/eeg.test.js` | 8 | Reading recording files, agreement with the Python pipeline, rejection of poor recordings, personal EEG baseline |
-| `sim/test_model.py` | 12 | Parameter recovery, shrinkage limits, trend test, calibration, Kalman filter against the hierarchical baseline, adaptive baselines |
+| `app/tests/habits.test.js` | 12 | One entry per day, weekly summary and statements, comparison with the person's own earlier weeks |
+| `app/tests/insight.test.js` | 18 | Rules for each source, statements across sources, order and size of the plan, referral level, follow-through counted from check-ins |
+| `app/tests/estimator.test.js` | 10 | Agreement with the training script, missing inputs, direction of every input, bands, inputs read from stored data |
+| `sim/test_model.py` | 14 | Parameter recovery, shrinkage limits, trend test, calibration, Kalman filter against the hierarchical baseline, adaptive baselines, logistic fit, the estimate of a lasting change on fresh cohorts |
 
 The in-app EEG processing reproduces the Python pipeline on six real recordings: relative band powers within 0.01, theta/alpha ratio within 3 %, alpha centre of gravity within 0.03 Hz.
 
@@ -469,6 +525,8 @@ A QA robot (`index.html?qa=1`) plays complete sessions automatically. It was use
 **Safety before analysis.** Four red-flag questions precede every session. Any "yes" stops the session, advises urgent care, and is shown first in the clinician's list.
 
 **No generated text.** The weekly statements on daily habits and the page of insights and plan (sections 6.11 and 6.12) are fixed sentences chosen by rules that are listed in this document and covered by unit tests. Each step of the plan shows the reason and the sources behind it.
+
+**One small model, beside the rule and not inside it.** The estimate of a lasting change (section 6.13) is the only machine-learning model in the app. It is a logistic regression with five inputs, each shown with its contribution; it runs on the device; it was fitted on simulated people and says so on the screen; and the status, the schedule and the advice on referral do not depend on it.
 
 **Explainable by design.** Every flag is produced by two named statistics and shows its reason: the indicator, the value, the person's usual level and the limit, or the areas that carry a trend. Machine learning was tested where it could help (EEG classification) and left out of the decision path when it did not outperform a single interpretable ratio.
 
@@ -536,6 +594,9 @@ No data were collected from people during the challenge. The organisers provided
 | Hours counted for a sleep band | Under 5 h as 4.5 h; 8 h or more as 8 h | Daily habits, mean sleep | Hours entered as a number, or a wearable |
 | Check-ins needed before a week is summarised | 4 of 7 days | Daily habits, weekly statements | Review after pilot |
 | Sleep clearly below the person's usual | 1 h or more below the mean of the previous 56 days | Daily habits, sentence on the status card | Within-person variation measured in the pilot |
+| Sleep in the simulation behind the estimate | A usual night of 7.0 h (SD 0.5 h between people, 0.7 h between nights); 60 % of bad days follow a short night of 5.0 h | Estimate of a lasting change | Sleep answers and session results from the pilot |
+| EEG in the simulation behind the estimate | Half of the people record EEG; the z rises by 1.0 per between-person SD of true drop and by 0.8 after a short night | Estimate of a lasting change | Repeated headband recordings in the pilot |
+| Bands of the estimate | Below 0.35 more likely temporary; above 0.65 more likely lasting | Wording of the estimate | Calibration on real flagged sessions |
 | Excessive alcohol means more than 12 drinks a week | Lancet: more than 21 UK units | Risk profile | – |
 | Headband electrodes sit at the nearest 10–20 positions | AF7 and AF8 from Fp and F7/F8; TP9 and TP10 as T5 and T6; Fpz as the mean of Fp1 and Fp2 | EEG analysis | Real device recordings |
 | One device per participant | The app compares operating system, screen size and input type with the sessions of the current baseline; on a change the participant goes back to the usual device or starts a new baseline | All timing measures | Device calibration; devices of the same model cannot be told apart |
@@ -597,6 +658,8 @@ No data were collected from people during the challenge. The organisers provided
 17. Not a certified medical device. No regulatory assessment has been made.
 18. Daily habits are single self-report questions answered once a day, in bands. They are not actigraphy or a validated sleep or activity questionnaire, days can be missed, and the comparison with session results is descriptive.
 19. The insights and plan are rules written by the team from general guidance. They have not been reviewed by a clinical panel or tested with users, and the order of the steps is a judgement, not a measured benefit.
+20. Follow-through on the plan is counted from self-reported daily check-ins. It shows whether a habit was reported on the days that were logged. The prototype has not measured whether following the plan changes session results.
+21. The estimate of a lasting change was fitted and tested on simulated people only. Its coefficients carry the simulator's assumptions, including those on sleep and EEG, which have not been measured. It is an aid to reading a flagged result and must not be used to delay a referral.
 
 ---
 
@@ -650,6 +713,7 @@ python -m http.server 8080
 | Ten months of simulated history ending in a red status | `http://localhost:8080/index.html?demo=1` |
 | The clinician view | `http://localhost:8080/clinician.html?demo=1` (opens with the simulated cohort) |
 | Insights and plan | In the example profile: "See my summary and plan" on the home screen |
+| The estimate of a lasting change | On that page: "Is this change likely to last?"; in the clinician view: "Summary across sources" of DEMO-RASHID |
 | The daily habits check-in | In the example profile: "Habits" in the bottom bar, or "Check in for today" on the home screen |
 | The EEG check on real recordings | In the participant app: "Brain-rhythm check", then a sample recording or the simulated headband |
 | A complete session played automatically (shortened) | `http://localhost:8080/index.html?qa=1&fast=1` |
@@ -665,11 +729,19 @@ node tests/eeg.test.js
 node tests/backup.test.js
 node tests/habits.test.js
 node tests/insight.test.js
+node tests/estimator.test.js
 ```
 
 ```bash
 cd sim
 python test_model.py
+```
+
+Refit the estimate of a lasting change (a few minutes; writes `sim/results/estimator.md` and `app/js/estimator-model.js`):
+
+```bash
+cd sim
+python train_estimator.py results
 ```
 
 Further reading: [`README.md`](../README.md), [`eeg/REPORT.md`](../eeg/REPORT.md), [`sim/REPORT.md`](../sim/REPORT.md), [`nhanes/REPORT.md`](../nhanes/REPORT.md).

@@ -129,7 +129,18 @@ body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
   #app .lg i.hb-k.soc{background:#b79bff}
 }
 @media(prefers-color-scheme:dark){
-  #app .in-row .btn{background:#2c2c2e;color:#d4dfff}
-  #app .in-plan li::before{background:#2c2c2e;color:#d5e0ff}
   #app .chip.warn{background:#4d3a12;color:#ffe1a4}
+  #app .in-more>summary,#app .in-src-body .btn{background:#2c2c2e;color:#d4dfff}
+  #app .in-more-body,#app .in-fx>div{background:#2c2c2e}
+  #app .in-plan>li.urgent>.activity-icon{background:#4a2320;color:#ffb4ad}
+  #app .in-scale span{background:#2c2c2e;color:#dcdce1}
+  #app .in-scale span.on{background:#2449e8;color:#fff}
+  #app .in-week i,#app .lg i.in-k{border-color:#636366}
+  #app .in-week li.met i,#app .lg i.in-k.met{background:#2449e8;border-color:#2449e8}
+  #app .in-week li.miss i,#app .lg i.in-k.miss{background:#3a3a3c;border-color:#3a3a3c;color:#dcdce1}
+  #app .in-ten i{background:#48484a}
+  #app .in-ten i.on{background:#8ba7ff}
+  #app .in-fx h4 .ui-icon{color:#8ba7ff}
+  #app .in-em{background:#2a1716;border-color:#5c2f2b}
+  #app .in-em h4{color:#ffb4ad}
 }

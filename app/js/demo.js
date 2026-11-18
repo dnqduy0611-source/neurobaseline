@@ -33,7 +33,7 @@
       return {
         id: 'demo' + i, startedAt: new Date(at).toISOString(), finishedAt: new Date(at + 5.5 * 60000).toISOString(),
         condition: 'standard', completed: true, simulated: true, flagged: poor,
-        context: { sleep: poor ? 'poor' : 'ok', unwell: false, mood: 'ok', medChange: false },
+        context: { sleep: poor ? 'poor' : 'ok', sleepHours: poor ? '5' : '7', unwell: false, mood: 'ok', medChange: false },
         measures: { rt: r[1], sdmt: r[2], mem: r[3], gng: r[4], gngGoRt: null, rtCv: null }
       };
     });

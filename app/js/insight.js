@@ -15,7 +15,7 @@
     var e = deps.stats.evaluate(d.sessions || [], deps.config, now, d.epoch || 0), a = e.last, flagged = !!(e.light && a && a.light !== 'green');
     var tasks = { phase: e.phase, light: e.light || null, done: e.done, total: e.total, sessions: e.sessions.length,
                   exceed: flagged ? a.exceed.slice() : [], trend: flagged && (has(a.reasons, 'trend') || has(a.reasons, 'trendWatch')), context: flagged && has(a.reasons, 'context'),
-                  lastAt: a ? Date.parse(a.s.startedAt) : null };
+                  lastAt: a ? Date.parse(a.s.startedAt) : null, nextDue: e.nextDue };
     var list = deps.habits.clean(d.habits), habits = null;
     if (list.length) {
       var week = deps.habits.summarize(list, now, 7);
@@ -26,7 +26,7 @@
     var eeg = null;
     if (deps.eeg && Array.isArray(d.eeg) && d.eeg.length) { var ev = deps.eeg.evaluate(d.eeg, deps.config.eeg); eeg = { n: ev.length, status: ev[ev.length - 1].status }; }
     var redflag = (d.events || []).some(function (x) { return x && x.type === 'redflag' && now - Date.parse(x.at) <= 14 * DAY; });
-    return { tasks: tasks, habits: habits, risk: risk, eeg: eeg, redflag: redflag };
+    return { tasks: tasks, habits: habits, risk: risk, eeg: eeg, redflag: redflag, checkins: list };
   }
 
   // The rules. Returns { sources, links, plan, more, referral, missing }.
@@ -91,11 +91,41 @@
     if (!R) step('profile', ['risk'], 'w.profile');
     if (!plan.length || (plan.length < MAX_PLAN && !flagged && !inp.redflag)) step('keep', ['tasks'], 'w.keep');
 
-    return { sources: sources, links: links, plan: plan.slice(0, MAX_PLAN), more: Math.max(0, plan.length - MAX_PLAN),
+    return { sources: sources, links: links, plan: plan.slice(0, MAX_PLAN), planAll: plan, more: Math.max(0, plan.length - MAX_PLAN),
              referral: inp.redflag ? 'urgent' : T.light === 'red' ? 'review' : T.light === 'yellow' ? 'repeat' : 'none', missing: missing };
   }
 
-  var api = { build: build, fromData: fromData, RISK_ORDER: RISK_ORDER, MAX_PLAN: MAX_PLAN };
+  // How each step of the plan is going, read from data the app already has. Nothing extra is stored or asked.
+  // A habit step is counted from the daily check-ins: the last 7 days next to the 7 days before, and one mark
+  // per day for 14 days. A day counts when the check-in for that day reaches the goal of the step.
+  var GOAL = {
+    sleep: function (x, hb) { return x.sleepH ? hb.HOURS[x.sleepH] >= hb.TARGET.sleepH : null; },   // 7 hours or more
+    move: function (x) { return x.active ? x.active === '30plus' : null; },                         // 30 minutes or more
+    social: function (x) { return x.social ? x.social === 'yes' : null; }
+  };
+  function track(plan, inp, hb, now) {
+    var list = inp.checkins || [], today = hb.dayKey(now);
+    return plan.map(function (p) {
+      if (p.id === 'repeat' || p.id === 'keep') return inp.tasks.nextDue == null ? null : { kind: 'due', at: inp.tasks.nextDue, ready: now >= inp.tasks.nextDue };
+      if (!GOAL[p.id] && p.id !== 'checkin') return null;                                           // no measure in the app for this step
+      var days = [], cur = { met: 0, logged: 0 }, prev = { met: 0, logged: 0 };
+      for (var k = 13; k >= 0; k--) {
+        var x = hb.find(list, hb.addDays(today, -k)), w = k < 7 ? cur : prev, v;
+        if (p.id === 'checkin') v = x ? true : k === 0 ? null : false;                              // today can still be done
+        else v = x ? GOAL[p.id](x, hb) : null;
+        if (p.id === 'checkin') { w.logged++; if (v) w.met++; }
+        else if (v !== null) { w.logged++; if (v) w.met++; }
+        days.push(v === null ? 'none' : v ? 'met' : 'miss');
+      }
+      var a = cur.met * prev.logged, b = prev.met * cur.logged, enough = cur.logged >= 3 && prev.logged >= 3;   // compared as shares of the days logged
+      var out = { kind: 'days', days: days, met: cur.met, logged: cur.logged, prevMet: prev.met, prevLogged: prev.logged,
+                  dir: !enough ? null : a > b ? 'up' : a < b ? 'down' : 'same', today: !!hb.find(list, today) };
+      if (p.id === 'sleep') { out.h = hb.summarize(list, now, 7).sleepH; out.prevH = hb.summarize(list, hb.dayMs(hb.addDays(today, -7)), 7).sleepH; }
+      return out;
+    });
+  }
+
+  var api = { build: build, fromData: fromData, track: track, RISK_ORDER: RISK_ORDER, MAX_PLAN: MAX_PLAN };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root.NB || typeof window !== 'undefined') { root.NB = root.NB || {}; root.NB.insight = api; }
 })(typeof window !== 'undefined' ? window : globalThis);

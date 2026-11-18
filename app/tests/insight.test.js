@@ -96,4 +96,52 @@ test('fromData reads a stored profile: confirmed change, reported red flag, adde
   d.events = [{ type: 'redflag', at: new Date(NOW - 2 * DAY).toISOString() }];
   assert.strictEqual(IN.build(IN.fromData(d, DEPS, NOW)).referral, 'urgent');
 });
+// ---- how the plan is going ----
+function entries(spec) { // 14 days ending today, oldest first; null = no check-in that day
+  var today = HB.dayKey(NOW), out = [];
+  spec.forEach(function (x, i) { if (x) out.push(Object.assign({ day: HB.addDays(today, i - 13) }, x)); });
+  return out;
+}
+function facts(list, nextDue) { return { tasks: tasks('green', { nextDue: nextDue === undefined ? null : nextDue }), checkins: HB.clean(list) }; }
+var LO = { sleepH: '5', active: 'none', social: 'no' }, HI = { sleepH: '7', active: '30plus', social: 'yes' };
+
+test('a habit step is counted from the check-ins: the last 7 days next to the 7 days before', function () {
+  var pr = IN.track([{ id: 'sleep' }, { id: 'move' }, { id: 'social' }], facts(entries([LO, LO, LO, LO, LO, LO, LO, LO, HI, null, HI, LO, HI, LO])), HB, NOW);
+  assert.deepStrictEqual([pr[0].met, pr[0].logged, pr[0].prevMet, pr[0].prevLogged, pr[0].dir, pr[0].today], [3, 6, 0, 7, 'up', true]);
+  assert.deepStrictEqual(pr[0].days, ['miss', 'miss', 'miss', 'miss', 'miss', 'miss', 'miss', 'miss', 'met', 'none', 'met', 'miss', 'met', 'miss']);
+  assert.strictEqual(pr[0].h, 6); assert.strictEqual(pr[0].prevH, 5);
+  assert.deepStrictEqual([pr[1].met, pr[1].logged, pr[1].dir], [3, 6, 'up']); assert.deepStrictEqual([pr[2].met, pr[2].logged, pr[2].dir], [3, 6, 'up']);
+  assert.strictEqual(pr[1].h, undefined);
+});
+test('a day without a check-in is not counted against the person, and a thin week is not compared', function () {
+  var thin = IN.track([{ id: 'sleep' }], facts(entries([HI, HI, HI, HI, HI, HI, HI, null, null, null, null, null, LO, null])), HB, NOW)[0];
+  assert.deepStrictEqual([thin.met, thin.logged, thin.prevMet, thin.prevLogged, thin.dir, thin.today], [0, 1, 7, 7, null, false]); assert.strictEqual(thin.days[13], 'none');
+  var down = IN.track([{ id: 'move' }], facts(entries([HI, HI, HI, HI, HI, HI, HI, LO, LO, LO, HI, null, null, null])), HB, NOW)[0];
+  assert.deepStrictEqual([down.met, down.logged, down.dir], [1, 4, 'down']);
+  var same = IN.track([{ id: 'social' }], facts(entries([HI, LO, null, null, HI, LO, null, LO, HI, LO, HI, LO, HI, null])), HB, NOW)[0];
+  assert.deepStrictEqual([same.met, same.logged, same.prevMet, same.prevLogged, same.dir], [3, 6, 2, 4, 'same']);
+  var none = IN.track([{ id: 'sleep' }], facts([]), HB, NOW)[0];
+  assert.deepStrictEqual([none.logged, none.prevLogged, none.dir, none.h], [0, 0, null, null]);
+});
+test('the check-in step counts the days with a check-in and leaves today open', function () {
+  var pr = IN.track([{ id: 'checkin' }], facts(entries([null, null, null, null, null, null, null, LO, null, LO, LO, null, LO, null])), HB, NOW)[0];
+  assert.deepStrictEqual([pr.met, pr.logged, pr.prevMet, pr.prevLogged, pr.dir, pr.today], [4, 7, 0, 7, 'up', false]);
+  assert.strictEqual(pr.days[8], 'miss'); assert.strictEqual(pr.days[13], 'none');
+});
+test('session steps show when the next session opens; steps with no measure in the app are not tracked', function () {
+  var plan = [{ id: 'doctor' }, { id: 'repeat' }, { id: 'keep' }, { id: 'risk', vars: { id: 'hypertension' } }, { id: 'urgent' }, { id: 'profile' }];
+  assert.deepStrictEqual(IN.track(plan, facts([], NOW + 3 * DAY), HB, NOW), [null, { kind: 'due', at: NOW + 3 * DAY, ready: false }, { kind: 'due', at: NOW + 3 * DAY, ready: false }, null, null, null]);
+  assert.strictEqual(IN.track(plan, facts([], NOW - DAY), HB, NOW)[1].ready, true);
+  assert.strictEqual(IN.track(plan, facts([]), HB, NOW)[1], null);
+});
+test('fromData hands on the check-ins and the next session date, and the whole plan is kept', function () {
+  var d = JSON.parse(JSON.stringify(DC.build(NOW).filter(function (x) { return x.code === 'DEMO-F05'; })[0]));
+  d.habits = []; for (var k = 20; k >= 0; k--) d.habits.push({ day: HB.addDays(HB.dayKey(NOW), -k), sleepH: k < 7 ? '7' : '5', sleepQ: 'ok', active: 'none', social: 'no' });
+  var inp = IN.fromData(d, DEPS, NOW), out = IN.build(inp), pr = IN.track(out.plan, inp, HB, NOW);
+  assert.strictEqual(inp.checkins.length, 21); assert.strictEqual(typeof inp.tasks.nextDue, 'number');
+  assert.ok(out.planAll.length >= out.plan.length); assert.deepStrictEqual(out.planAll.slice(0, 3), out.plan);
+  assert.strictEqual(out.plan[0].id, 'doctor'); assert.strictEqual(pr[0], null);
+  var mv = pr[ids(out.plan).indexOf('move')];
+  assert.deepStrictEqual([mv.kind, mv.met, mv.logged, mv.prevMet, mv.prevLogged, mv.dir], ['days', 0, 7, 0, 7, 'same']);
+});
 console.log('\n' + n + ' tests passed');

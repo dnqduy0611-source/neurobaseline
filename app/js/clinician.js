@@ -104,7 +104,35 @@
       t('c.in.src.eeg') + '</td><td>' + (inp.eeg ? t('c.eeg.s.' + inp.eeg.status) : t('c.in.notshared')) + '</td></tr></table><p><b>' + t('c.in.links') + '</b></p>' +
       (syn.links.length ? '<ul>' + syn.links.map(function (l) {
         return '<li>' + t('c.in.' + l.key, { h: l.vars.h != null ? loc(l.vars.h.toFixed(1)) : '', d: l.vars.d != null ? loc(l.vars.d.toFixed(1)) : '' }) + '</li>'; }).join('') + '</ul>'
-        : '<p class="muted">' + t('c.in.l.none') + '</p>') + '<p class="muted small">' + t('c.in.note') + '</p>';
+        : '<p class="muted">' + t('c.in.l.none') + '</p>');
+    // the model's estimate for a flagged session, with the contribution of every input
+    var EM = NB.estimatorModel, es = NB.estimator && EM ? NB.estimator.fromData(d, { stats: ST, config: C, habits: NB.habits, eeg: NB.eeg, model: EM }, now) : null;
+    sy += '<p><b>' + t('c.in.est') + '</b></p>';
+    if (!es) sy += '<p class="muted">' + t('c.in.est.none') + '</p>';
+    else {
+      var sgn = function (v) { return (v >= 0 ? '+' : '−') + loc(Math.abs(v).toFixed(2)); };
+      sy += '<p>' + t('c.in.est.p', { p: '<b>' + loc(es.p.toFixed(2)) + '</b>', band: t('c.in.est.b.' + es.band) }) + '</p><div class="scroll"><table class="data"><thead><tr><th>' + t('c.in.est.h.in') + '</th><th>' +
+        t('c.in.est.h.v') + '</th><th>' + t('c.in.est.h.c') + '</th></tr></thead><tbody><tr><td>' + t('c.in.est.base') + '</td><td></td><td class="num">' + sgn(EM.base) + '</td></tr>' +
+        es.parts.map(function (q) {
+          return '<tr><td>' + t('c.in.est.i.' + q.id) + '</td><td class="num">' + (!q.known ? t('c.in.est.na') : q.id === 'flag' ? t(q.value ? 'c.in.est.yes' : 'c.in.est.no') : loc(q.value.toFixed(2))) +
+            '</td><td class="num">' + sgn(q.contrib) + '</td></tr>'; }).join('') +
+        '<tr><td><b>' + t('c.in.est.total') + '</b></td><td></td><td class="num"><b>' + sgn(es.logit) + '</b></td></tr></tbody></table></div><p class="muted small">' +
+        t('c.in.est.note', { auc: loc(EM.test.auc.toFixed(2)), n: EM.test.n, r: Math.round(es.seen * 100) }) + '</p>';
+    }
+    // the plan the same rules give, and how far the daily check-ins show it is followed. Steps that only ask for a source the file does not hold are left out.
+    var cplan = syn.planAll.filter(function (p) { return !(p.id === 'checkin' && !inp.habits) && !(p.id === 'profile' && !inp.risk); }).slice(0, NB.insight.MAX_PLAN);
+    var ctr = NB.insight.track(cplan, inp, NB.habits, now), one = function (x) { return x == null ? t('c.none') : loc(x.toFixed(1)); };
+    function follow(p, pr) {
+      if (!pr) return t('c.in.f.na');
+      if (pr.kind === 'due') return t('c.in.f.due', { date: fmtDate(pr.at) });
+      if (!pr.logged) return t('c.in.f.nolog');
+      return t(p.id === 'sleep' ? 'c.in.f.sleep' : p.id === 'checkin' ? 'c.in.f.checkin' : 'c.in.f.days', { n: pr.met, m: pr.logged, h: one(pr.h) }) +
+        (pr.prevLogged ? ' ' + t(p.id === 'sleep' ? 'c.in.f.prev.sleep' : 'c.in.f.prev', { n: pr.prevMet, m: pr.prevLogged, h: one(pr.prevH) }) : '');
+    }
+    sy += '<p><b>' + t('c.in.plan') + '</b></p><div class="scroll"><table class="data plan"><thead><tr><th>' + t('c.in.plan.h.step') + '</th><th>' + t('c.in.plan.h.basis') + '</th><th>' + t('c.in.plan.h.follow') + '</th></tr></thead><tbody>' +
+      cplan.map(function (p, i) {
+        return '<tr><td>' + (i + 1) + '. ' + t('c.in.p.' + p.id, { name: p.id === 'risk' ? t('f.' + p.vars.id) : '' }) + '</td><td>' + p.uses.map(function (u) { return t('c.in.u.' + u); }).join(', ') + '</td><td>' + follow(p, ctr[i]) + '</td></tr>';
+      }).join('') + '</tbody></table></div><p class="muted small">' + t('c.in.plan.note') + ' ' + t('c.in.note') + '</p>';
     h += sec(t('c.sec.synth'), sy);
 
     // indicators vs baseline
@@ -246,7 +274,7 @@
       r.readAsText(f);
     });
   }
-  var DEMO_V = 2;   // raised when the simulated cohort gains new content, so a stored copy is rebuilt
+  var DEMO_V = 3;   // raised when the simulated cohort gains new content, so a stored copy is rebuilt
   function toggleDemo() {
     store.demoV = DEMO_V;
     if (hasDemo()) Object.keys(store.patients).forEach(function (k) { if (store.patients[k].source === 'demo') delete store.patients[k]; });

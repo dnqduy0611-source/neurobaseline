@@ -150,7 +150,7 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);color:var(--mut);fon
       <li>No account, no server</li>
       <li>English and Vietnamese</li>
       <li>Light and dark themes</li>
-      <li>100 automated tests</li>
+      <li>117 automated tests</li>
     </ul>
   </div>
 
@@ -193,7 +193,7 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);color:var(--mut);fon
     <div class="card"><span class="n">03</span><h3>Daily habits check-in</h3><p>Four questions a day on sleep, movement and time with others, about 30 seconds. A four-week chart sits next to the session results, and each week is compared with the person's own earlier weeks.</p></div>
     <div class="card"><span class="n">04</span><h3>Risk profile</h3><p>An optional profile built on the 14 modifiable risk factors of the 2024 Lancet Commission, such as hearing, blood pressure, physical activity and social contact. Each factor present comes with one thing to act on.</p></div>
     <div class="card"><span class="n">05</span><h3>Optional brain-rhythm check</h3><p>A resting EEG recording from a consumer headband is processed in the browser. The theta/alpha ratio and alpha frequency are compared with the person's own earlier recordings.</p></div>
-    <div class="card"><span class="n">06</span><h3>Insights and a plan</h3><p>One page reads session results, daily habits, the risk profile and the EEG check together, says how they fit, and gives at most three steps for the next two weeks. Every line comes from a fixed rule and states why it is there.</p></div>
+    <div class="card"><span class="n">06</span><h3>Insights and a plan</h3><p>One page reads session results, daily habits, the risk profile and the EEG check together, says how they fit, and gives at most three steps for the next two weeks. The daily check-ins show how each step is going. For a flagged result, a small machine-learning model estimates whether the change is likely to last and shows the inputs behind it.</p></div>
   </div>
 </section>
 
@@ -259,7 +259,7 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);color:var(--mut);fon
         <li><b>No diagnosis.</b> The app reports a change from a person's own level. A clinician decides what it means.</li>
         <li><b>Data stay on the device.</b> No account and no server. Health answers, daily habits and EEG results leave the phone only when the person ticks the box and exports a file.</li>
         <li><b>A clear referral path.</b> Red-flag symptoms lead straight to urgent-care advice; a confirmed change leads to a summary for a doctor.</li>
-        <li><b>Explained, not scored.</b> Every flag and every step of the plan states its reason. Fixed rules choose the words; no AI model writes them.</li>
+        <li><b>Explained, not scored.</b> Every flag and every step of the plan states its reason. The one machine-learning model is a logistic regression that shows every input, runs on the device and never changes the status. No text is written by AI.</li>
         <li><b>Simulated data are labelled</b> wherever they appear.</li>
       </ul>
     </div>

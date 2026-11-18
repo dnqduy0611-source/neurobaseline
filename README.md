@@ -21,7 +21,9 @@ Research prototype for the Future Health Digital Innovation Challenge, Challenge
 | `app/js/habits.js`, `app/js/habits-ui.js` | The daily habits check-in: sleep, physical activity and social contact, once a day. |
 | `app/tests/habits.test.js` | Unit tests for the daily habits check-in (12 tests). |
 | `app/js/insight.js`, `app/js/insight-ui.js` | Insights and plan: one summary across session results, daily habits, risk profile and EEG, and a plan of at most three steps. |
-| `app/tests/insight.test.js` | Unit tests for the rules behind the insights and the plan (13 tests). |
+| `app/tests/insight.test.js` | Unit tests for the rules behind the insights and the plan (18 tests). |
+| `app/js/estimator.js`, `app/js/estimator-model.js` | Estimate of a lasting change: a logistic regression for a flagged session, and its coefficients as written by `sim/train_estimator.py`. |
+| `app/tests/estimator.test.js` | Unit tests for the estimate, checked against the training script (10 tests). |
 | `app/clinician.html` | The clinician view: priority list, per-participant summary, checklist of reversible contributors, review record. |
 | `app/tests/clin.test.js` | Unit tests for the clinician view logic and the simulated cohort (11 tests). |
 | `app/tests/backup.test.js` | Unit tests for the check a backup file passes before it is restored (7 tests). |
@@ -53,6 +55,7 @@ node tests/eeg.test.js
 node tests/backup.test.js
 node tests/habits.test.js
 node tests/insight.test.js
+node tests/estimator.test.js
 ```
 
 ## How a session works (about 5 minutes)
@@ -160,8 +163,19 @@ One page that reads session results, daily habits, the risk profile and the opti
 
 - **Logic.** `js/insight.js` holds two pure functions. `fromData` reduces a participant's stored data to the facts the rules use; `build` applies the rules and returns one line per source, at most three statements across sources, a plan of at most three steps, and the referral level. The rules are listed in section 6.12 of the technical documentation.
 - **Screens.** `js/insight-ui.js` turns the result into words: a card on the home screen and the page itself. Text is in `js/i18n-insight.js`.
-- **Clinician view.** The same result opens the detail page as "Summary across sources", in clinical wording.
+- **Layout.** One short line per statement and per step is always shown; the reasons and the longer advice open on request. The advice on seeing a doctor and the emergency signs are never folded away.
+- **Following the plan.** `track` in `js/insight.js` counts each habit step from the daily check-ins over the last 7 days and the 7 days before. The page shows one mark per day for the last 7 days. Nothing extra is stored.
+- **Clinician view.** The same result opens the detail page as "Summary across sources", in clinical wording, with the plan and the follow-through for each step.
 - **No generated text and no effect on the status.** Every sentence is fixed and chosen by a rule; each step of the plan shows why it is there.
+
+## Estimate of a lasting change
+
+For a session the status rule has flagged, a small machine-learning model estimates whether the change is a lasting one or the session was off for another reason.
+
+- **Model.** Logistic regression with five inputs: the trend of the earlier sessions, the RCI of this session averaged over the three primary indicators, a reported unusual day, hours of sleep short of 7 in the night before, and the EEG z. `sim/train_estimator.py` fits it on simulated cohorts and writes the coefficients to `js/estimator-model.js`.
+- **In the app.** `js/estimator.js` computes the inputs from stored data and returns the probability, one of three bands and the contribution of every input. An input the app does not have counts as the average and contributes nothing. The earlier trend counts as 0 until two earlier follow-up sessions count towards it, as in the training data.
+- **Screens.** The participant sees the band, how often such a pattern was a true change in the simulated test cohorts, and the inputs that point each way. The clinician sees the probability and the table of contributions.
+- **Limits.** Fitted and tested on simulated people only (AUC 0.87 in simulated test cohorts). It never changes the status or the advice on referral.
 
 ## Tier 2b: brain-rhythm check (optional)
 

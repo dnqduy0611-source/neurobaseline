@@ -9,6 +9,7 @@ import numpy as np
 import kalman as KF
 import model as M
 import simulate as S
+import train_estimator as T
 
 n_tests = 0
 
@@ -151,6 +152,27 @@ def t_kalman_and_adaptive_baseline():
     assert adapt['slow_detected_24m'] < 0.5 * anchor['slow_detected_24m'], (adapt, anchor)  # an adaptive baseline absorbs it
 
 
+def t_logistic():
+    rng = np.random.default_rng(7)
+    x, true = rng.standard_normal((40000, 3)), np.array([1.2, -0.7, 0.0])
+    y = (rng.random(40000) < T.sigmoid(-0.5 + x @ true)).astype(float)
+    b0, coef = T.fit_logistic(x, y)
+    close(b0, -0.5, 0.06)
+    close(coef, true, 0.06)
+    close(T.auc(np.array([0.1, 0.4, 0.35, 0.8]), np.array([0.0, 0.0, 1.0, 1.0])), 0.75, 1e-12)
+    close(T.auc(np.ones(4), np.array([0.0, 1.0, 0.0, 1.0])), 0.5, 1e-12)                  # ties count half
+
+
+def t_estimator():
+    m = T.train(*T.flagged_sessions(P, T.Extra(), 0, 4000)[:2])
+    c = dict(zip(T.FEATURES, m['coef']))
+    assert c['trend'] > 0 and c['zmean'] > 0 and c['eeg'] > 0 and c['flag'] < 0 and c['sleep'] < 0, c   # each input points the way its explanation says
+    r = T.describe(m, *T.flagged_sessions(P, T.Extra(), 1, 4000))
+    assert r['auc'] > 0.82 and r['auc'] > r['auc_trend'] and r['brier'] < r['brier_rate'], r
+    assert r['bands'][0]['rate'] < 0.2 and r['bands'][2]['rate'] > 0.7, r['bands']
+    close(T.predict(m, np.full((1, len(T.FEATURES)), np.nan)), T.sigmoid(m['base']), 1e-12)             # a missing input contributes nothing
+
+
 test('fit recovers between- and within-person SD', t_fit_variances)
 test('fit recovers age and education effects', t_fit_fixed_effects)
 test('fit recovers the practice curve', t_fit_practice)
@@ -163,4 +185,6 @@ test('trend test separates decliners and tolerates a wrong baseline better than 
 test('calibration reaches a 5 % false-referral rate for every method', t_calibration)
 test('Kalman level after the burst equals the hierarchical baseline', t_kalman_burst_is_hierarchical_baseline)
 test('Kalman finds slow decline; an adaptive baseline absorbs it', t_kalman_and_adaptive_baseline)
+test('logistic fit recovers its coefficients; AUC on known cases', t_logistic)
+test('estimate of a lasting change: signs, separation and bands on fresh cohorts', t_estimator)
 print(f'\n{n_tests} tests passed')

@@ -238,7 +238,7 @@ def calibrate(c, p, pm, method, target=0.05, iters=12):
     return (lo + hi) / 2
 
 
-def run_app_rule(c, p, pm, z_yellow=1.96, z_red=2.5, h_yellow=3.0, h_red=3.5):
+def run_app_rule(c, p, pm, z_yellow=1.96, z_red=2.5, h_yellow=3.0, h_red=3.5, on_session=None):
     """The rule exactly as the app applies it. No population norms and no practice correction (the app has neither yet).
 
     Baseline = mean of sessions 2-5. Each follow-up session gets
@@ -248,6 +248,8 @@ def run_app_rule(c, p, pm, z_yellow=1.96, z_red=2.5, h_yellow=3.0, h_red=3.5):
              (not on a reported bad day), or trend >= h_red.
     Yellow : otherwise, any indicator beyond z_yellow, or trend >= h_yellow. Yellow brings the next session forward.
     Returns (first red step, first red step at or after onset, share of first reds raised by the trend test).
+    on_session, if given, is called at every step with (step, due, z, trend, flag, red, yellow, confirmed):
+    what the rule saw and decided for the people who had a session at that step.
     """
     n, steps = len(c['age']), 2 * p.months
     vals = burst(c, p)[:, 1:]
@@ -286,6 +288,8 @@ def run_app_rule(c, p, pm, z_yellow=1.96, z_red=2.5, h_yellow=3.0, h_red=3.5):
         trend_red = due & (g >= h_red)
         red = due & ((ex_r & prev).any(axis=1) | ((ex_r.sum(axis=1) >= 2) & ~flag) | trend_red)
         yellow = due & ~red & (ex_y.any(axis=1) | (g >= h_yellow))
+        if on_session is not None:
+            on_session(s, due, z, g, flag, red, yellow, (ex_r & prev).any(axis=1))
         prev[due] = ex_r[due]
         new = red & np.isinf(first)
         by_trend[new] = trend_red[new]

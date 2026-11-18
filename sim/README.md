@@ -125,6 +125,16 @@ python run_kalman.py results
 python stress_kalman.py results
 ```
 
+## Estimate of a lasting change (`train_estimator.py`)
+
+A logistic regression that the app runs for a session the rule has flagged: is the change a lasting one, or was the session off for another reason? The script follows cohorts with `simulate.run_app_rule`, collects every flagged session up to a person's first red light, fits the model on six cohorts and tests it on four others. Inputs: the trend statistic before the session, the RCI of the session averaged over the three indicators, a reported unusual day, hours of sleep short of 7 in the night before, and the EEG z. Sleep and EEG are not in `simulate.py`; they are drawn in the script under the assumptions of its `Extra` class.
+
+```bash
+python train_estimator.py results
+```
+
+It writes `results/estimator.md`, `results/estimator.json` and the coefficients the app reads, `../app/js/estimator-model.js`. The model has not seen data from real people.
+
 ## Tests (`test_model.py`)
 
-Twelve checks (the last two cover `kalman.py`): the fit recovers the parameters that generated the data; the shrinkage weight behaves at its limits; the RCI is the `k = 0` case; the CUSUM ignores ordinary sessions and caps a single wild one; the trend test separates decliners and is less misled by a wrong baseline than the CUSUM; stricter thresholds refer fewer people; calibration reaches the 5 % target for every method.
+Fourteen checks (two cover `kalman.py` and the last two `train_estimator.py`): the fit recovers the parameters that generated the data; the shrinkage weight behaves at its limits; the RCI is the `k = 0` case; the CUSUM ignores ordinary sessions and caps a single wild one; the trend test separates decliners and is less misled by a wrong baseline than the CUSUM; stricter thresholds refer fewer people; calibration reaches the 5 % target for every method.

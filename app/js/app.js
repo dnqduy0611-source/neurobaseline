@@ -39,7 +39,16 @@
       file: '<path d="M12 3v12m0 0-4-4m4 4 4-4M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/>',
       shield: '<path d="M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6Z"/><path d="m9 12 2 2 4-4"/>',
       hand: '<path d="M8 12V6a1.5 1.5 0 0 1 3 0v5m0-1V4.5a1.5 1.5 0 0 1 3 0V11m0-4a1.5 1.5 0 0 1 3 0v7a7 7 0 0 1-7 7c-2.6 0-4.2-1.3-5.6-3.6L4 14.5A1.5 1.5 0 0 1 6.5 13L8 15"/>',
-      eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>'
+      eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+      moon: '<path d="M20 14.5A8.5 8.5 0 1 1 9.5 4 6.6 6.6 0 0 0 20 14.5Z"/>',
+      walk: '<circle cx="13" cy="4.5" r="2"/><path d="m7 21 3-6.5-1.5-3 .5-4 3.5-1 2.5 3.5 3 1.5M9 7.5 6 9.5V13m4.5 1.5 3 2.5 1 4"/>',
+      people: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17.2" cy="9" r="2.6"/><path d="M17 14.2a5 5 0 0 1 4 5.8"/>',
+      medical: '<rect x="4" y="4" width="16" height="16" rx="5"/><path d="M12 8.5v7M8.5 12h7"/>',
+      repeat: '<path d="M4 11a8 8 0 0 1 14-4.5L20 9M20 4v5h-5M20 13a8 8 0 0 1-14 4.5L4 15M4 20v-5h5"/>',
+      alert: '<path d="M12 3.5 2.5 20h19Z"/><path d="M12 10v4.5M12 17.2v.1"/>',
+      chev: '<path d="m6 9 6 6 6-6"/>',
+      up: '<path d="M12 19V5m-6 6 6-6 6 6"/>',
+      down: '<path d="M12 5v14m-6-6 6 6 6-6"/>'
     };
     return '<svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (paths[name] || '') + '</svg>';
   }
@@ -582,6 +591,6 @@
   NB.app = { boot: boot, go: go, ui: ui, evalNow: evalNow };
   if (NB.eegUi) NB.eegUi.init({ V: V, ACT: ACT, head: head, backBtn: backBtn, go: go, ui: ui, fmtShort: fmtShort });   // optional brain-rhythm check
   if (NB.habitsUi) NB.habitsUi.init({ V: V, ACT: ACT, head: head, backBtn: backBtn, go: go, flow: flow, choices: choices, flowBack: flowBack, autoAdvance: autoAdvance, icon: icon, esc: esc, evalNow: evalNow, fmtShort: fmtShort });   // optional daily habits
-  if (NB.insightUi) NB.insightUi.init({ V: V, ACT: ACT, head: head, backBtn: backBtn, go: go, icon: icon });   // summary across sources and plan
+  if (NB.insightUi) NB.insightUi.init({ V: V, ACT: ACT, head: head, backBtn: backBtn, go: go, icon: icon, fmtShort: fmtShort });   // summary across sources and plan
   boot();
 })();
